@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anchor & Sail — Live Signals</title>
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f5f5f3; --surface:#ffffff; --surface-2:#f0efec; --border:#e2e1dc; --border-2:#cfcec8;
+  --text:#0b0b0b; --text-2:#52514e; --text-3:#8a897f;
+  --s1:#2a78d6; --s2:#eb6834; --good:#008300; --warn:#eda100; --bad:#e34948; --violet:#4a3aa7; --aqua:#1baf7a;
+  --good-bg:#e6f4e6; --bad-bg:#fdeaea; --warn-bg:#fff4dc; --blue-bg:#e6f0fb; --violet-bg:#ece9f8;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    color-scheme: dark;
+    --bg:#131312; --surface:#1a1a19; --surface-2:#232322; --border:#2e2e2c; --border-2:#3f3f3c;
+    --text:#ffffff; --text-2:#c3c2b7; --text-3:#8a897f;
+    --s1:#3987e5; --s2:#d95926; --good:#3cae3c; --warn:#c98500; --bad:#e66767; --violet:#9085e9; --aqua:#199e70;
+    --good-bg:#12301a; --bad-bg:#3a1a1a; --warn-bg:#3a2d10; --blue-bg:#14273f; --violet-bg:#242046;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif}
+a{color:var(--s1)}
+.wrap{max-width:1500px;margin:0 auto;padding:16px 20px 60px}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;padding:8px 0 14px;border-bottom:1px solid var(--border)}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}
+h1 small{font-weight:500;color:var(--text-2);font-size:14px;margin-left:8px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--text-2);font-size:13px;align-items:center}
+.meta b{color:var(--text)}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid transparent;white-space:nowrap}
+.pill.live{background:var(--good-bg);color:var(--good)}
+.pill.closed{background:var(--surface-2);color:var(--text-2)}
+.pill.stale{background:var(--warn-bg);color:var(--warn)}
+button{font:inherit;cursor:pointer;border:1px solid var(--border-2);background:var(--surface);color:var(--text);border-radius:8px;padding:6px 12px}
+button:hover{border-color:var(--text-3)}
+.banner{margin:14px 0 0;padding:10px 14px;border-radius:10px;background:var(--warn-bg);border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);font-size:13px}
+.banner summary{cursor:pointer;font-weight:600;color:var(--text)}
+.banner ul{margin:8px 0 0;padding-left:18px;color:var(--text-2)}
+.banner.err{background:var(--bad-bg);border-color:color-mix(in srgb,var(--bad) 40%,transparent)}
+.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:18px 0 10px}
+.tab{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:12px 14px;text-align:left;cursor:pointer;transition:border-color .15s}
+.tab:hover{border-color:var(--text-3)}
+.tab.active{border-color:var(--s1);box-shadow:0 0 0 2px color-mix(in srgb,var(--s1) 25%,transparent)}
+.tab .name{font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:baseline}
+.tab .name span{font-size:11px;color:var(--text-3);font-weight:500}
+.tab .sub{color:var(--text-2);font-size:12px;margin-top:2px}
+.tab .row{display:flex;gap:14px;margin-top:8px;font-size:12px;color:var(--text-2)}
+.tab .row b{color:var(--text);font-variant-numeric:tabular-nums}
+.pos{color:var(--good)} .neg{color:var(--bad)} .mut{color:var(--text-3)}
+section{margin-top:22px}
+.sec-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 8px}
+.sec-h h2{font-size:17px;margin:0}
+.sec-h .n{font-size:12px;color:var(--text-3)}
+.sec-h .desc{font-size:12px;color:var(--text-2)}
+h3{font-size:13px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2);font-weight:600}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0;overflow:hidden}
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+th{position:sticky;top:0;background:var(--surface-2);color:var(--text-2);font-weight:600;font-size:12px;cursor:pointer;user-select:none}
+th.l,td.l{text-align:left}
+th:hover{color:var(--text)}
+th .arrow{opacity:.5;font-size:10px;margin-left:3px}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:color-mix(in srgb,var(--s1) 6%,transparent)}
+td.sym{font-weight:700;text-align:left}
+td.sym small{display:block;font-weight:400;color:var(--text-3);font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+.empty{padding:16px;color:var(--text-3);font-size:13px;text-align:center}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.02em}
+.tag.exit{background:var(--bad-bg);color:var(--bad)}
+.tag.entry{background:var(--good-bg);color:var(--good)}
+.tag.scale{background:var(--warn-bg);color:var(--warn)}
+.tag.held{background:var(--blue-bg);color:var(--s1)}
+.tag.armed{background:var(--violet-bg);color:var(--violet)}
+.tag.trend{background:var(--good-bg);color:var(--good)}
+.tag.grey{background:var(--surface-2);color:var(--text-2)}
+.tag.today{background:var(--bad);color:#fff}
+.tag.noslot{background:var(--surface-2);color:var(--text-2)}
+.ok{color:var(--good);font-weight:700} .no{color:var(--text-3)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.kpi .k{font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em}
+.kpi .v{font-size:20px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi .d{font-size:12px;color:var(--text-2);margin-top:2px}
+.perf{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:12px}
+@media (max-width:980px){.perf{grid-template-columns:1fr}.tabs{grid-template-columns:repeat(2,1fr)}}
+.chart{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px 6px}
+.chart .t{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px}
+.chart .t b{font-size:13px}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--text-2)}
+.legend i{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:5px;border-radius:2px}
+svg{display:block;width:100%;height:auto}
+.tt{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--border-2);border-radius:8px;padding:6px 9px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.12);display:none;z-index:5;white-space:nowrap}
+.stats{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:6px 14px}
+.stats div{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.stats div:last-child{border-bottom:none}
+.stats span:first-child{color:var(--text-2)}
+.stats span:last-child{font-variant-numeric:tabular-nums;font-weight:600}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 8px}
+.toolbar input{font:inherit;padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--surface);color:var(--text);min-width:220px}
+.toolbar .chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--border-2);background:var(--surface);border-radius:999px;padding:3px 10px;font-size:12px;cursor:pointer;color:var(--text-2)}
+.chip.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+.note{font-size:12px;color:var(--text-3);margin-top:8px}
+footer{margin-top:30px;color:var(--text-3);font-size:12px;border-top:1px solid var(--border);padding-top:12px;line-height:1.6}
+.stopbar{display:inline-block;width:70px;height:6px;background:var(--surface-2);border-radius:3px;vertical-align:middle;margin-left:6px;position:relative;overflow:hidden}
+.stopbar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+#loading{padding:60px;text-align:center;color:var(--text-2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Anchor &amp; Sail <small>live signal dashboard · four portfolios</small></h1>
+      <div class="meta" id="meta"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="mut" id="autoref" style="font-size:12px"></span>
+      <button id="refresh">↻ Refresh now</button>
+    </div>
+  </header>
+  <div id="warnings"></div>
+  <div id="loading">Loading latest data…</div>
+  <div id="tabs" class="tabs" hidden></div>
+  <main id="main"></main>
+  <footer id="foot"></footer>
+</div>
+<div class="tt" id="tt"></div>
+
+<script>
+(function(){
+'use strict';
+const $ = (s, el=document) => el.querySelector(s);
+const el = (tag, attrs={}, ...kids) => { const n=document.createElement(tag); for(const [k,v] of Object.entries(attrs)){ if(k==='class') n.className=v; else if(k==='html') n.innerHTML=v; else if(k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k,v);} for(const k of kids){ if(k==null) continue; n.append(k.nodeType?k:document.createTextNode(k)); } return n; };
+const inr = new Intl.NumberFormat('en-IN', {maximumFractionDigits:0});
+const inr2 = new Intl.NumberFormat('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+const fR = v => v==null ? '—' : '₹' + inr.format(v);
+const fP = v => v==null ? '—' : inr2.format(v);
+const fPct = (v, sign=true) => v==null ? '—' : ((sign && v>0)?'+':'') + v.toFixed(2) + '%';
+const cls = v => v==null ? 'mut' : v>0 ? 'pos' : v<0 ? 'neg' : '';
+const pctCell = v => { const t=document.createElement('td'); t.className=cls(v); t.textContent=fPct(v); return t; };
+const yesno = b => b==null ? '—' : b ? '✓' : '·';
+const lakh = v => v==null ? '—' : '₹' + (Math.abs(v)>=1e7 ? (v/1e7).toFixed(2)+' Cr' : (v/1e5).toFixed(2)+' L');
+
+let DATA=null, active = localStorage.getItem('as_tab') || 'CORE';
+
+async function load(){
+  try{
+    const r = await fetch('data.json?t=' + Date.now(), {cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    DATA = await r.json();
+    render();
+  }catch(e){
+    $('#loading').innerHTML = '<b>No data yet</b> (' + e.message + ').<br><br>If this is a fresh setup: go to the repository → <b>Actions</b> → <b>Anchor &amp; Sail daily dashboard</b> → <b>Run workflow</b>, wait ~5 minutes, then reload this page.<br>If you opened index.html from your disk, open the GitHub Pages URL instead — a browser cannot read data.json from a local file.';
+  }
+}
+
+function render(){
+  const D = DATA;
+  $('#loading').hidden = true;
+  const live = D.market_status.startsWith('LIVE');
+  const st = el('span', {class:'pill ' + (live?'live':(D.market_status.startsWith('Closed')?'closed':'stale'))}, D.market_status);
+  $('#meta').replaceChildren(
+    el('span', {}, 'Data as of ', el('b', {}, D.data_date)), st,
+    el('span', {}, 'Nifty 50 ', el('b', {}, fP(D.nifty.close)), ' ', el('span', {class:cls(D.nifty.chg_pct)}, fPct(D.nifty.chg_pct))),
+    el('span', {}, 'Signal month ', el('b', {}, D.completed_month), ' · running ', el('b', {}, D.running_month)),
+    el('span', {}, 'Built ', el('b', {}, D.generated_at_ist))
+  );
+  // warnings
+  const W = $('#warnings'); W.replaceChildren();
+  if(D.warnings && D.warnings.length){
+    const mock = D.warnings.some(w=>w.startsWith('MOCK'));
+    const det = el('details', {class:'banner' + (mock?' err':''), open: mock ? '' : null});
+    if(!mock) det.removeAttribute('open');
+    det.append(el('summary', {}, `${D.warnings.length} data warning${D.warnings.length>1?'s':''} — click to expand`),
+               el('ul', {}, ...D.warnings.map(w=>el('li', {}, w))));
+    W.append(det);
+  }
+  // tabs
+  const T = $('#tabs'); T.hidden=false; T.replaceChildren();
+  for(const [k,P] of Object.entries(D.portfolios)){
+    const pf = P.performance;
+    const exitsToday = P.exits.filter(e=>e.today).length;
+    const b = el('button', {class:'tab' + (k===active?' active':''), onclick:()=>{active=k; localStorage.setItem('as_tab',k); render();}},
+      el('div', {class:'name'}, P.name, el('span', {}, `${P.universe_label} · rank ${P.ranking?'ON':'OFF'}`)),
+      el('div', {class:'sub'}, `vs ${P.benchmark}`),
+      el('div', {class:'row'},
+        el('span', {}, 'Port ', el('b', {class:cls(pf.return_pct)}, fPct(pf.return_pct))),
+        el('span', {}, 'Bench ', el('b', {class:cls(pf.bench_return_pct)}, fPct(pf.bench_return_pct))),
+        el('span', {}, 'Open ', el('b', {}, `${pf.open_positions}/${pf.slots}`)),
+        el('span', {}, 'Exits today ', el('b', {class: exitsToday?'neg':''}, exitsToday))
+      ));
+    T.append(b);
+  }
+  renderPortfolio(D.portfolios[active]);
+  $('#foot').innerHTML = `Strategy: monthly bars · Williams %R(${D.strategy.wr_len}) armed &lt; ${D.strategy.arm}, trigger ≥ ${D.strategy.trigger} · EMA 5 &gt; 15 &gt; 50 · stop −15% · target +30% (50% scale-out, stop to breakeven, then trails previous month's low) · ${D.strategy.slots} slots · size = corpus/25 · idle cash in Nifty 50 ETF (^NSEI) · Indian delivery costs applied.<br>
+  Entry signals are generated <b>once a month</b> on the completed close (running month excluded) — the entry table stays the same all month by design. The open book and its stops are re-checked on every run. Universe = today's index members (survivorship bias vs the benchmark is present and unquantified). Prices: Yahoo Finance via yfinance, adjusted. Build time ${D.runtime_sec}s.`;
+}
+
+function sortable(table, rows, cols, renderRow, defaultKey, defaultDesc){
+  let key=defaultKey, desc=!!defaultDesc;
+  const thead = el('thead'); const tbody = el('tbody');
+  const draw = () => {
+    const rs = rows.slice();
+    if(key){ rs.sort((a,b)=>{ const x=a[key], y=b[key]; if(x==null&&y==null) return 0; if(x==null) return 1; if(y==null) return -1; return (typeof x==='number'? x-y : String(x).localeCompare(String(y))) * (desc?-1:1); }); }
+    tbody.replaceChildren(...rs.map(renderRow));
+    thead.querySelectorAll('th').forEach(th=>{ const a=th.querySelector('.arrow'); if(a) a.textContent = th.dataset.key===key ? (desc?'▼':'▲') : ''; });
+  };
+  const tr = el('tr');
+  for(const c of cols){
+    const th = el('th', {class: c.left?'l':'', 'data-key': c.key||'', title: c.title||''}, c.label, el('span', {class:'arrow'}, ''));
+    if(c.key) th.addEventListener('click', ()=>{ if(key===c.key) desc=!desc; else {key=c.key; desc = c.desc!==false;} draw(); });
+    tr.append(th);
+  }
+  thead.append(tr); table.append(thead, tbody); draw();
+  return draw;
+}
+
+function tableCard(rows, cols, renderRow, emptyMsg, sortKey, sortDesc){
+  const card = el('div', {class:'card'});
+  if(!rows.length){ card.append(el('div', {class:'empty'}, emptyMsg)); return card; }
+  const wrap = el('div', {class:'tblwrap'}); const table = el('table');
+  sortable(table, rows, cols, renderRow, sortKey, sortDesc); wrap.append(table); card.append(wrap); return card;
+}
+
+function symCell(r){ const td=el('td',{class:'sym'}, r.symbol); if(r.name) td.append(el('small',{}, r.name)); return td; }
+function td(v, c){ const t=el('td', {class:c||''}); t.textContent = v; return t; }
+
+function renderPortfolio(P){
+  const M = $('#main'); M.replaceChildren();
+  const D = DATA, pf = P.performance;
+
+  // ------------------------------------------------------------ 1. SIGNALS
+  const s1 = el('section');
+  s1.append(el('div', {class:'sec-h'}, el('h2', {}, `1 · Signals — ${P.name}`),
+    el('span', {class:'desc'}, `${P.universe_label} (${P.universe_size} stocks) · ranking ${P.ranking?'ON':'OFF'} · ₹${inr.format(P.capital)} committed ${P.inception}`)));
+
+  // exits
+  s1.append(el('h3', {}, `Exit signals — stops / targets hit (this month${P.exits.some(e=>e.today)?', today highlighted':''})`));
+  s1.append(tableCard(P.exits, [
+      {label:'Stock', left:true, key:'symbol'}, {label:'Action', key:'type'}, {label:'Date', key:'date'}, {label:'Reason', key:'reason', left:true},
+      {label:'Entry date', key:'entry_date'}, {label:'Entry ₹', key:'entry'}, {label:'Qty', key:'qty'}, {label:'Exit ₹', key:'price'},
+      {label:'Stop was', key:'stop'}, {label:'P&L %', key:'pnl_pct'}, {label:'Realised ₹', key:'realised'}],
+    r => { const tr=el('tr'); tr.append(symCell(r),
+        el('td',{}, el('span',{class:'tag '+(r.type==='EXIT'?'exit':'scale')}, r.type), r.today? el('span',{class:'tag today', style:'margin-left:4px'},'TODAY'):null),
+        td(r.date), td(r.reason,'l'), td(r.entry_date), td(fP(r.entry)), td(inr.format(r.qty)), td(fP(r.price)), td(fP(r.stop)), pctCell(r.pnl_pct),
+        td(r.realised==null?'—':fR(r.realised), cls(r.realised))); return tr; },
+    'No stop or target has been hit this month. Open positions and their live stop levels are listed below.', 'date', true));
+
+  // entries
+  s1.append(el('h3', {}, `Entry signals — ${P.signal_month || D.completed_month} month-end close (valid for the whole of ${D.running_month})`));
+  s1.append(tableCard(P.entries, [
+      {label:'#', key:'rank', desc:false}, {label:'Stock', left:true, key:'symbol'}, {label:'Status', key:'status', left:true}, {label:'Entry (close) ₹', key:'close'},
+      {label:'LTP ₹', key:'ltp'}, {label:'vs entry', key:'from_entry_pct'}, {label:'Qty', key:'qty'}, {label:'Size ₹', key:'size'},
+      {label:'Stop ₹ (−15%)', key:'stop'}, {label:'Target ₹ (+30%)', key:'target'}, {label:'%R(14)', key:'wr'}, {label:'Score', key:'score', title:'(EMA5−EMA50)/EMA50 ×100'},
+      {label:'EMA5', key:'ema5'}, {label:'EMA15', key:'ema15'}, {label:'EMA50', key:'ema50'}],
+    r => { const tr=el('tr'); tr.append(td(r.rank), symCell(r),
+        el('td',{class:'l'}, el('span',{class:'tag '+(r.status==='Taken'?'entry':'noslot')}, r.status.toUpperCase()), r.status==='Taken' && !r.still_open ? el('span',{class:'tag exit', style:'margin-left:4px'},'EXITED'):null),
+        td(fP(r.close)), td(fP(r.ltp)), pctCell(r.from_entry_pct), td(r.qty?inr.format(r.qty):'—'), td(fR(r.size)), td(fP(r.stop)), td(fP(r.target)),
+        td(fP(r.wr)), td(fP(r.score)), td(fP(r.ema5)), td(fP(r.ema15)), td(fP(r.ema50))); return tr; },
+    `No stock in this universe satisfied Armed + Trigger + Trend on the ${D.completed_month} close. Next signal set: ${D.running_month} month-end.`, 'rank', false));
+
+  // open book
+  s1.append(el('h3', {}, `Open book — live stop levels (${pf.open_positions} of ${pf.slots} slots)`));
+  s1.append(tableCard(P.open_positions, [
+      {label:'Stock', left:true, key:'symbol'}, {label:'Entry date', key:'entry_date'}, {label:'Entry ₹', key:'entry'}, {label:'Qty held', key:'qty_open'},
+      {label:'LTP ₹', key:'ltp'}, {label:'P&L %', key:'pnl_pct'}, {label:'Unrealised ₹', key:'unrealised'}, {label:'Stop ₹', key:'stop'},
+      {label:'LTP above stop', key:'to_stop_pct', desc:false, title:'How far the last price sits above the stop. Red when within 5%.'},
+      {label:'Day low', key:'day_low'}, {label:'Target ₹', key:'target'}, {label:'To target', key:'to_target_pct'}, {label:'Scaled', key:'scaled'}, {label:'%R now', key:'wr_p', title:'Running-month %R(14), provisional'}],
+    r => { const tr=el('tr'); const near = r.to_stop_pct!=null && r.to_stop_pct<=5;
+        const bar = el('span',{class:'stopbar'}); const w = r.to_stop_pct==null?0:Math.max(0,Math.min(100, r.to_stop_pct/20*100)); bar.append(el('i',{style:`width:${w}%;background:${near?'var(--bad)':'var(--s1)'}`}));
+        tr.append(symCell(r), td(r.entry_date), td(fP(r.entry)), td(inr.format(r.qty_open)), td(fP(r.ltp)), pctCell(r.pnl_pct), td(fR(r.unrealised), cls(r.unrealised)),
+          td(fP(r.stop), 'l'), el('td',{class: near?'neg':''}, fPct(r.to_stop_pct,false), bar), td(fP(r.day_low)), td(fP(r.target)),
+          td(r.to_target_pct==null?(r.scaled?'done':'—'):fPct(r.to_target_pct,false)), el('td',{}, r.scaled? el('span',{class:'tag scale'},'50% OUT'):'·'), td(fP(r.wr_p))); return tr; },
+    'No open positions.', 'to_stop_pct', false));
+  M.append(s1);
+
+  // ------------------------------------------------------------ 2. PERFORMANCE
+  const s2 = el('section');
+  s2.append(el('div', {class:'sec-h'}, el('h2', {}, `2 · Performance vs ${P.benchmark}`), el('span', {class:'desc'}, `since ${P.inception} · ${pf.days} day${pf.days===1?'':'s'} · benchmark source: ${P.benchmark_source}`)));
+  const kp = el('div', {class:'kpis'});
+  const kpi = (k, v, d, c) => el('div', {class:'kpi'}, el('div',{class:'k'},k), el('div',{class:'v '+(c||'')},v), el('div',{class:'d'},d||''));
+  kp.append(
+    kpi('Portfolio value', fR(pf.nav), `on ₹${inr.format(P.capital)}`),
+    kpi('Portfolio return', fPct(pf.return_pct), pf.cagr_pct!=null? `CAGR ${fPct(pf.cagr_pct)}` : 'absolute since inception', cls(pf.return_pct)),
+    kpi(P.benchmark, fPct(pf.bench_return_pct), pf.bench_cagr_pct!=null? `CAGR ${fPct(pf.bench_cagr_pct)}` : (pf.bench_level? `level ${fP(pf.bench_level)}`:'unavailable'), cls(pf.bench_return_pct)),
+    kpi('Excess return', fPct(pf.alpha_pct), 'portfolio − benchmark', cls(pf.alpha_pct)),
+    kpi('Invested / Cash', `${pf.nav? (pf.invested/pf.nav*100).toFixed(0):0}% / ${pf.nav? (pf.cash/pf.nav*100).toFixed(0):0}%`, `${lakh(pf.invested)} in ${pf.open_positions} stocks · ${lakh(pf.cash)} in Nifty ETF`),
+    kpi('Max drawdown', fPct(pf.max_dd_pct,false), 'on daily NAV', pf.max_dd_pct<0?'neg':''),
+  );
+  s2.append(kp);
+  const grid = el('div', {class:'perf'});
+  grid.append(chartCard(P), el('div', {class:'stats'},
+    el('div',{}, el('span',{},'Realised P&L (net of costs)'), el('span',{class:cls(pf.realised)}, fR(pf.realised))),
+    el('div',{}, el('span',{},'Unrealised P&L'), el('span',{class:cls(pf.unrealised)}, fR(pf.unrealised))),
+    el('div',{}, el('span',{},'Closed trades / wins'), el('span',{}, `${pf.closed_trades} / ${pf.wins}`)),
+    el('div',{}, el('span',{},'Open positions'), el('span',{}, `${pf.open_positions} of ${pf.slots}`)),
+    el('div',{}, el('span',{},'Position size now (corpus/25)'), el('span',{}, fR(pf.nav/pf.slots))),
+    el('div',{}, el('span',{},'Benchmark base → now'), el('span',{}, pf.bench_base? `${fP(pf.bench_base)} → ${fP(pf.bench_level)}` : '—')),
+    el('div',{}, el('span',{},'Ranking when signals > slots'), el('span',{}, P.ranking? 'ON — highest score first' : 'OFF — first-come (universe order)')),
+  ));
+  s2.append(grid);
+  M.append(s2);
+
+  // ------------------------------------------------------------ 3. WATCHLIST
+  const s3 = el('section');
+  s3.append(el('div', {class:'sec-h'}, el('h2', {}, '3 · Watchlist'), el('span', {class:'desc'}, 'armed names one condition away from an entry, and holdings close to their stop or target')));
+  s3.append(el('h3', {}, `Entry watchlist — armed (%R dipped below −40), waiting for the last condition · ${P.watch_entry.length}`));
+  s3.append(tableCard(P.watch_entry, [
+      {label:'Stock', left:true, key:'symbol'}, {label:'Waiting for', key:'waiting_for', left:true}, {label:'Would trigger if month closed today?', key:'would_trigger'},
+      {label:'LTP ₹', key:'close'}, {label:'Day %', key:'chg_pct'}, {label:`%R (${D.completed_month})`, key:'wr'}, {label:'%R now', key:'wr_p'},
+      {label:`Trend (${D.completed_month})`, key:'trend'}, {label:'Trend now', key:'trend_p'}, {label:'EMA5', key:'ema5'}, {label:'EMA15', key:'ema15'}, {label:'EMA50', key:'ema50'}, {label:'Score', key:'score'}],
+    r => { const tr=el('tr'); tr.append(symCell(r), td(r.waiting_for,'l'), el('td',{}, r.would_trigger? el('span',{class:'tag entry'},'YES — on track'): el('span',{class:'no'},'not yet')),
+        td(fP(r.close)), pctCell(r.chg_pct), td(fP(r.wr)), td(fP(r.wr_p), r.wr_p!=null && r.wr_p>=-20 ? 'ok':''), el('td',{class:r.trend?'ok':'no'}, yesno(r.trend)), el('td',{class:r.trend_p?'ok':'no'}, yesno(r.trend_p)),
+        td(fP(r.ema5)), td(fP(r.ema15)), td(fP(r.ema50)), td(fP(r.score))); return tr; },
+    'Nothing is armed and one step away right now.', 'would_trigger', true));
+  s3.append(el('h3', {}, `Exit watchlist — holdings within 5% of stop or target · ${P.watch_exit.length}`));
+  s3.append(tableCard(P.watch_exit, [
+      {label:'Stock', left:true, key:'symbol'}, {label:'LTP ₹', key:'ltp'}, {label:'Stop ₹', key:'stop'}, {label:'LTP above stop', key:'to_stop_pct', desc:false},
+      {label:'Day low', key:'day_low'}, {label:'Target ₹', key:'target'}, {label:'To target', key:'to_target_pct'}, {label:'Entry ₹', key:'entry'}, {label:'P&L %', key:'pnl_pct'}, {label:'Qty', key:'qty_open'}],
+    r => { const tr=el('tr'); const near = r.to_stop_pct!=null && r.to_stop_pct<=5; tr.append(symCell(r), td(fP(r.ltp)), td(fP(r.stop)), el('td',{class:near?'neg':''}, fPct(r.to_stop_pct,false)),
+        td(fP(r.day_low)), td(fP(r.target)), td(r.to_target_pct==null?'—':fPct(r.to_target_pct,false), r.to_target_pct!=null&&r.to_target_pct<=5?'ok':''), td(fP(r.entry)), pctCell(r.pnl_pct), td(inr.format(r.qty_open))); return tr; },
+    'No holding is within 5% of its stop or target.', 'to_stop_pct', false));
+  M.append(s3);
+
+  // ------------------------------------------------------------ 4. UNIVERSE
+  const s4 = el('section');
+  s4.append(el('div', {class:'sec-h'}, el('h2', {}, `4 · Universe — ${P.universe_label}`), el('span', {class:'n'}, `${P.universe_size} stocks · latest OHLC + monthly indicators (${D.completed_month} close; "now" = running month, provisional)`)));
+  const tb = el('div', {class:'toolbar'});
+  const inp = el('input', {placeholder:'Filter symbol / name…', type:'search'});
+  const states = ['ALL','HELD','ENTRY SIGNAL','ARMED + TREND','ARMED','IN CYCLE','—','NO DATA'];
+  let stateF='ALL', q='';
+  const chips = el('div',{class:'chips'});
+  const counts = P.universe.reduce((a,r)=>{a[r.state]=(a[r.state]||0)+1; return a;}, {});
+  const holder = el('div');
+  const drawUni = () => {
+    const rows = P.universe.filter(r => (stateF==='ALL'||r.state===stateF) && (!q || r.symbol.toLowerCase().includes(q) || (r.name||'').toLowerCase().includes(q)));
+    holder.replaceChildren(tableCard(rows, [
+      {label:'Stock', left:true, key:'symbol', desc:false}, {label:'State', key:'state', left:true}, {label:'Date', key:'date'}, {label:'Open', key:'open'}, {label:'High', key:'high'}, {label:'Low', key:'low'}, {label:'Close / LTP', key:'close'},
+      {label:'Day %', key:'chg_pct'}, {label:'%R(14)', key:'wr', title:'Completed month'}, {label:'%R now', key:'wr_p'}, {label:'Armed', key:'armed'}, {label:'Trend', key:'trend'}, {label:'Trend now', key:'trend_p'},
+      {label:'EMA5', key:'ema5'}, {label:'EMA15', key:'ema15'}, {label:'EMA50', key:'ema50'}, {label:'Score', key:'score'}, {label:'Month close', key:'month_close'}],
+      r => { const tr=el('tr'); if(r.nodata){ tr.append(symCell(r), el('td',{class:'l'}, el('span',{class:'tag grey'},'NO DATA')), ...Array(16).fill(0).map(()=>td('—','mut'))); return tr; }
+        const tagc = {HELD:'held','ENTRY SIGNAL':'entry','ARMED + TREND':'armed',ARMED:'armed','IN CYCLE':'grey','—':'grey'}[r.state]||'grey';
+        tr.append(symCell(r), el('td',{class:'l'}, el('span',{class:'tag '+tagc}, r.state)), td(r.date + (r.stale?' ⚠':''), r.stale?'neg':'mut'), td(fP(r.open)), td(fP(r.high)), td(fP(r.low)), td(fP(r.close)), pctCell(r.chg_pct),
+          td(fP(r.wr), r.wr!=null && r.wr < -40 ? 'neg' : (r.wr!=null && r.wr>=-20 ? 'ok':'')), td(fP(r.wr_p)), el('td',{class:r.armed?'ok':'no'}, yesno(r.armed)), el('td',{class:r.trend?'ok':'no'}, yesno(r.trend)), el('td',{class:r.trend_p?'ok':'no'}, yesno(r.trend_p)),
+          td(fP(r.ema5)), td(fP(r.ema15)), td(fP(r.ema50)), td(fP(r.score), cls(r.score)), td(fP(r.month_close))); return tr; },
+      'No stocks match the filter.', 'symbol', false));
+  };
+  for(const s of states){ const n = s==='ALL'? P.universe.length : (counts[s]||0); if(s!=='ALL' && !n) continue;
+    const c = el('button', {class:'chip'+(s===stateF?' on':''), onclick:()=>{stateF=s; chips.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on', x.dataset.s===s)); drawUni();}, 'data-s':s}, `${s} ${n}`); chips.append(c); }
+  inp.addEventListener('input', ()=>{ q=inp.value.trim().toLowerCase(); drawUni(); });
+  tb.append(inp, chips); s4.append(tb, holder);
+  s4.append(el('div',{class:'note'}, 'States: HELD = in this portfolio\'s book · ENTRY SIGNAL = fired on the completed close · ARMED + TREND = %R dipped below −40 and EMAs aligned, waiting for %R ≥ −20 · ARMED = dipped, trend not aligned · IN CYCLE = the strategy\'s per-stock cycle is already in a position for this name (entered before this book started), so no fresh entry until it exits.'));
+  drawUni();
+  M.append(s4);
+}
+
+// ---------------------------------------------------------------- chart: NAV vs benchmark rebased to 100
+function chartCard(P){
+  const card = el('div', {class:'chart'});
+  const H = P.history.filter(h=>h.nav!=null);
+  card.append(el('div', {class:'t'}, el('b', {}, `Growth of 100 — ${P.name} vs ${P.benchmark}`),
+    el('div', {class:'legend'}, el('span',{}, el('i',{style:'background:var(--s1)'}), P.name), el('span',{}, el('i',{style:'background:var(--s2)'}), P.benchmark))));
+  if(H.length < 2){ card.append(el('div',{class:'empty'}, 'The equity curve appears once there are at least two days of history.')); return card; }
+  const W=760, Hh=280, pl=44, pr=14, pt=14, pb=28;
+  const nav0 = H[0].nav, b0 = H.find(h=>h.bench!=null)?.bench;
+  const pts = H.map((h,i)=>({i, date:h.date, p: h.nav/nav0*100, b: (b0 && h.bench!=null) ? h.bench/b0*100 : null}));
+  const vals = pts.flatMap(p=>[p.p, p.b]).filter(v=>v!=null);
+  let lo=Math.min(...vals), hi=Math.max(...vals); const pad=(hi-lo)*0.08||1; lo-=pad; hi+=pad;
+  const x = i => pl + (W-pl-pr) * (pts.length===1?0:i/(pts.length-1));
+  const y = v => pt + (Hh-pt-pb) * (1 - (v-lo)/(hi-lo));
+  const path = (key) => pts.filter(p=>p[key]!=null).map((p,k)=>`${k?'L':'M'}${x(p.i).toFixed(1)},${y(p[key]).toFixed(1)}`).join(' ');
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${Hh}`);
+  const ns = (t, a) => { const n=document.createElementNS('http://www.w3.org/2000/svg', t); for(const [k,v] of Object.entries(a)) n.setAttribute(k,v); return n; };
+  // grid + y labels
+  const ticks = 4;
+  for(let k=0;k<=ticks;k++){ const v = lo + (hi-lo)*k/ticks; svg.append(ns('line',{x1:pl,x2:W-pr,y1:y(v),y2:y(v),stroke:'var(--border)','stroke-width':1}));
+    const t = ns('text',{x:pl-6,y:y(v)+4,'text-anchor':'end',fill:'var(--text-3)','font-size':11}); t.textContent=v.toFixed(1); svg.append(t); }
+  svg.append(ns('line',{x1:pl,x2:W-pr,y1:y(100),y2:y(100),stroke:'var(--border-2)','stroke-dasharray':'3 3'}));
+  // x labels
+  const nx = Math.min(6, pts.length); for(let k=0;k<nx;k++){ const i=Math.round((pts.length-1)*k/(nx-1||1)); const t=ns('text',{x:x(i),y:Hh-8,'text-anchor':k===0?'start':k===nx-1?'end':'middle',fill:'var(--text-3)','font-size':11}); t.textContent=pts[i].date.slice(5); svg.append(t); }
+  if(b0) svg.append(ns('path',{d:path('b'),fill:'none',stroke:'var(--s2)','stroke-width':2,'stroke-linejoin':'round'}));
+  svg.append(ns('path',{d:path('p'),fill:'none',stroke:'var(--s1)','stroke-width':2,'stroke-linejoin':'round'}));
+  const cross = ns('line',{x1:0,x2:0,y1:pt,y2:Hh-pb,stroke:'var(--text-3)','stroke-width':1,opacity:0});
+  const dotP = ns('circle',{r:4,fill:'var(--s1)',stroke:'var(--surface)','stroke-width':2,opacity:0});
+  const dotB = ns('circle',{r:4,fill:'var(--s2)',stroke:'var(--surface)','stroke-width':2,opacity:0});
+  svg.append(cross, dotP, dotB);
+  const tt = $('#tt');
+  svg.addEventListener('mousemove', ev => { const r = svg.getBoundingClientRect(); const fx = (ev.clientX - r.left) / r.width * W; const i = Math.max(0, Math.min(pts.length-1, Math.round((fx-pl)/(W-pl-pr)*(pts.length-1)))); const p=pts[i];
+    cross.setAttribute('x1',x(i)); cross.setAttribute('x2',x(i)); cross.setAttribute('opacity',1);
+    dotP.setAttribute('cx',x(i)); dotP.setAttribute('cy',y(p.p)); dotP.setAttribute('opacity',1);
+    if(p.b!=null){ dotB.setAttribute('cx',x(i)); dotB.setAttribute('cy',y(p.b)); dotB.setAttribute('opacity',1);} else dotB.setAttribute('opacity',0);
+    tt.innerHTML = `<b>${p.date}</b><br>${P.name}: ${p.p.toFixed(2)} <span class="mut">(${fR(H[i].nav)})</span>` + (p.b!=null? `<br>${P.benchmark}: ${p.b.toFixed(2)}`:'');
+    tt.style.display='block'; tt.style.left = (ev.pageX + 14) + 'px'; tt.style.top = (ev.pageY - 10) + 'px'; });
+  svg.addEventListener('mouseleave', ()=>{ tt.style.display='none'; cross.setAttribute('opacity',0); dotP.setAttribute('opacity',0); dotB.setAttribute('opacity',0); });
+  card.append(svg);
+  return card;
+}
+
+$('#refresh').addEventListener('click', load);
+let secs = 300; setInterval(()=>{ secs--; if(secs<=0){ secs=300; load(); } $('#autoref').textContent = `auto-refresh in ${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}`; }, 1000);
+load();
+})();
+</script>
+</body>
+</html>
