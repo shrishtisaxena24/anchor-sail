@@ -171,7 +171,7 @@ def reconcile_with_cache(fresh: dict[str, pd.DataFrame], cache_name: str = "pric
         except Exception as e:
             warnings.append(f"Price cache unreadable ({e}); rebuilt.")
     merged: dict[str, pd.DataFrame] = {}
-    partial = []
+    partial, dropped_latest = [], {}
     for sym in set(fresh) | set(cached):
         f, c = fresh.get(sym), cached.get(sym)
         if f is None:
@@ -179,16 +179,24 @@ def reconcile_with_cache(fresh: dict[str, pd.DataFrame], cache_name: str = "pric
                 merged[sym] = c
                 partial.append(sym)
             continue
-        if c is not None and len(f) < 0.9 * len(c):
-            # partial download — keep cache, append genuinely newer rows
-            newer = f[f.index > c.index.max()]
-            merged[sym] = pd.concat([c, newer]).sort_index()
-            partial.append(sym)
-        else:
+        if c is None:
             merged[sym] = f
+            continue
+        # Fresh values win wherever Yahoo returned a row; dates Yahoo dropped (it removes the latest
+        # session overnight before re-publishing the official bar, and sometimes returns partial
+        # history) are filled from the cache so a bar never silently disappears between runs.
+        m = f.combine_first(c).sort_index()
+        merged[sym] = m
+        if len(f) < 0.9 * len(c):
+            partial.append(sym)
+        if f.index.max() < c.index.max():
+            dropped_latest.setdefault(str(c.index.max().date()), []).append(sym)
     if partial:
-        warnings.append(f"Partial/missing download for {len(partial)} symbol(s) — served from last good cache: "
+        warnings.append(f"Partial download for {len(partial)} symbol(s) — history completed from last good cache: "
                         f"{', '.join(sorted(from_yahoo(s) for s in partial))}")
+    for dt, syms in dropped_latest.items():
+        warnings.append(f"Yahoo has not (re)published the {dt} session for {len(syms)} symbol(s) — that bar is "
+                        f"carried from the previous run's cache" + (f" ({', '.join(sorted(from_yahoo(s) for s in syms[:8]))}…)" if len(syms) <= 8 else "."))
     # save cache
     try:
         frames = []
