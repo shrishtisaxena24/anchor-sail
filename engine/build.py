@@ -33,8 +33,11 @@ IST = ZoneInfo("Asia/Kolkata")
 # ----------------------------------------------------------------------------- configuration
 import os
 INCEPTION_MONTH = os.environ.get("AS_INCEPTION_MONTH", "2026-08")   # capital committed at this month's last close
-WARMUP_BARS = 65                   # monthly bars before signals are trusted (brief: 65-month warm-up)
+WARMUP_BARS = S.WR_LEN             # signals once %R(14) is computable (the reference treats indicators as valid when non-NaN)
+BACKTEST_START = "2016-01"         # backtest: capital committed at the previous month-end close, first entries on this month's close
 CLOSE_HHMM = (15, 35)              # after this IST time the day's bar is treated as final
+LEDGER_VERSION = 2                 # bump when the signal engine changes; ledgers with an older version are rebuilt
+                                   # deterministically from the inception close (only safe while the book is young)
 
 PORTFOLIOS = {
     "CORE":      {"label": "Core",      "universe": "NIFTY 50 + NIFTY NEXT 50", "ranking": False},
@@ -101,7 +104,11 @@ def last_completed_month(now_ist: datetime) -> str:
 def load_state(name: str) -> dict | None:
     p = STATE_DIR / f"{name}.json"
     if p.exists():
-        return json.loads(p.read_text())
+        st = json.loads(p.read_text())
+        if st.get("version") != LEDGER_VERSION:
+            log(f"{name}: ledger version {st.get('version')} != {LEDGER_VERSION} — rebuilding from inception")
+            return None
+        return st
     return None
 
 
@@ -117,6 +124,196 @@ def max_drawdown(navs: list[float]) -> float:
         if peak > 0:
             mdd = min(mdd, v / peak - 1)
     return mdd
+
+
+# ----------------------------------------------------------------------------- backtest 2016 -> today
+def _bench_at(bench, d):
+    if bench is None:
+        return None
+    bb = bench[bench.index <= d]
+    return float(bb.iloc[-1]) if len(bb) else None
+
+
+def run_backtest(pname, uni, ranking, monthly, entries_by_month, nsei_m, month_last_day, bench, bench_label,
+                 names, snap, data_date, nsei_last, completed_key, log):
+    """Full strategy simulation on monthly bars from BACKTEST_START to the last completed month, then
+    marked to market at today's prices. Same rules, slots, ranking, cost model and cash leg as the live
+    book (the Book class is reused unchanged)."""
+    months = [k for k in nsei_m["month"] if BACKTEST_START <= k <= completed_key]
+    if not months:
+        return None
+    prior = [k for k in nsei_m["month"] if k < BACKTEST_START]
+    if not prior:
+        return None
+    commit_key = prior[-1]
+    nsei_close = {k: float(c) for k, c in zip(nsei_m["month"], nsei_m["Close"])}
+    commit_day = month_last_day[commit_key]
+
+    # fast monthly lookups: sym -> month -> (o, h, l, c)
+    uni_set = set(uni)
+    rows = {}
+    for sym in uni:
+        ind = monthly.get(sym)
+        if ind is None:
+            continue
+        rows[sym] = {mk: (float(o), float(h), float(l), float(c)) for mk, o, h, l, c in
+                     zip(ind["month"], ind["Open"], ind["High"], ind["Low"], ind["Close"])}
+
+    state = {"portfolio": pname, "inception": str(commit_day.date()), "capital": S.CAPITAL,
+             "cash_units": S.CAPITAL / nsei_close[commit_key], "ranking": ranking}
+    book = S.Book(state)
+    hist = [{"date": str(commit_day.date()), "month": commit_key, "nav": S.CAPITAL, "bench": _bench_at(bench, commit_day),
+             "cash": S.CAPITAL, "inv": 0.0, "n": 0}]
+    prev_key = commit_key
+    for mk in months:
+        d = month_last_day[mk]
+        nc = nsei_close[mk]
+        bars, prev_low = {}, {}
+        for p in book.open_positions():
+            r = rows.get(p["symbol"], {})
+            if mk in r:
+                bars[p["symbol"]] = r[mk]
+            if prev_key in r:
+                prev_low[p["symbol"]] = r[prev_key][2]
+        book.check_exits(d, bars, nc, prev_low)
+        em = entries_by_month.get(mk, {})
+        cands = [em[s] for s in uni if s in em]
+        closes_all = {s: rows[s][mk][3] for s in uni_set if s in rows and mk in rows[s]}
+        book.take_entries(d, mk, cands, closes_all, nc, ranking)
+        closes_held = {s: closes_all[s] for s in book.held_symbols() if s in closes_all}
+        nav, cash, inv = book.nav(closes_held, nc)
+        hist.append({"date": str(d.date()), "month": mk, "nav": round(nav, 2), "bench": _bench_at(bench, d),
+                     "cash": round(cash, 2), "inv": round(inv, 2), "n": len(book.open_positions())})
+        prev_key = mk
+
+    # mark to market today (running month; no exits evaluated here — that is the live book's job)
+    ltp = {s: snap[s]["close"] for s in book.held_symbols() if s in snap and snap[s].get("close") is not None}
+    nav_now, cash_now, inv_now = book.nav(ltp, nsei_last)
+    if str(data_date.date()) != hist[-1]["date"]:
+        hist.append({"date": str(data_date.date()), "month": month_key(data_date), "nav": round(nav_now, 2),
+                     "bench": _bench_at(bench, data_date), "cash": round(cash_now, 2), "inv": round(inv_now, 2),
+                     "n": len(book.open_positions()), "mtm": True})
+
+    # ---- metrics
+    navs = [h["nav"] for h in hist]
+    years = (pd.Timestamp(hist[-1]["date"]) - commit_day).days / 365.25
+    cagr = (navs[-1] / S.CAPITAL) ** (1 / years) - 1 if years > 0 else None
+    bh = [(h["date"], h["bench"]) for h in hist if h["bench"] is not None]
+    bench_from = bh[0][0] if bh else None
+    bret = bcagr = None
+    if len(bh) >= 2:
+        by = (pd.Timestamp(bh[-1][0]) - pd.Timestamp(bh[0][0])).days / 365.25
+        bret = bh[-1][1] / bh[0][1] - 1
+        bcagr = (bh[-1][1] / bh[0][1]) ** (1 / by) - 1 if by > 0 else None
+    # strategy return over the same window as the benchmark (fair comparison when bench history is short)
+    ret_same_window = None
+    if bench_from:
+        nav0 = next((h["nav"] for h in hist if h["date"] >= bench_from), None)
+        if nav0:
+            ret_same_window = navs[-1] / nav0 - 1
+    m_navs = [h["nav"] for h in hist if not h.get("mtm")]
+    mrets = [m_navs[i] / m_navs[i - 1] - 1 for i in range(1, len(m_navs))]
+    sharpe = (np.mean(mrets) / np.std(mrets, ddof=1) * math.sqrt(12)) if len(mrets) > 2 and np.std(mrets, ddof=1) > 0 else None
+    mdd = max_drawdown(navs)
+    calmar = (cagr / abs(mdd)) if (cagr is not None and mdd < 0) else None
+    dd_series = []
+    peak = -1e18
+    for h in hist:
+        peak = max(peak, h["nav"])
+        dd_series.append(round((h["nav"] / peak - 1) * 100, 2))
+
+    closed = [p for p in book.positions if p["status"] == "closed"]
+    def months_between(a, b):
+        a, b = pd.Timestamp(a), pd.Timestamp(b)
+        return (b.year - a.year) * 12 + (b.month - a.month)
+    trades = []
+    for p in book.positions:
+        cur = snap.get(p["symbol"], {}).get("close")
+        pnl_pct = (p["realised"] / p["buy_value"] * 100) if p["status"] == "closed" and p["buy_value"] else \
+                  ((cur / p["entry"] - 1) * 100 if cur else None)
+        trades.append({"symbol": p["symbol"], "name": names.get(p["symbol"], ""), "entry_date": p["entry_date"],
+                       "entry": fnum(p["entry"]), "qty": p["qty"], "exit_date": p.get("exit_date"),
+                       "exit_price": fnum(p.get("exit_price")), "reason": p.get("reason") or ("OPEN — scaled 50%" if p["scaled"] else "OPEN"),
+                       "scaled": p["scaled"], "realised": fnum(p["realised"]) if p["status"] == "closed" else fnum(p["realised"]),
+                       "pnl_pct": fnum(pnl_pct), "status": p["status"],
+                       "months": months_between(p["entry_date"], p["exit_date"] or str(data_date.date())),
+                       "rank": p.get("rank"), "score": fnum(p.get("score"))})
+    trades.sort(key=lambda t: (t["status"] != "open", t["exit_date"] or "9999"), reverse=True)
+    wins = [p for p in closed if p["realised"] > 0]
+    losses = [p for p in closed if p["realised"] <= 0]
+    gross_win = sum(p["realised"] for p in wins)
+    gross_loss = -sum(p["realised"] for p in losses)
+    charges = sum(p["buy_costs"] + p["sell_costs"] for p in book.positions)
+    realised_total = sum(p["realised"] for p in book.positions)
+    reasons = {}
+    for p in closed:
+        reasons[p["reason"]] = reasons.get(p["reason"], 0) + 1
+
+    # yearly table
+    yearly = []
+    by_year = {}
+    for h in hist:
+        by_year.setdefault(h["date"][:4], []).append(h)
+    prev_nav, prev_b = S.CAPITAL, hist[0]["bench"]
+    for y in sorted(by_year):
+        if by_year[y][-1]["date"] == hist[0]["date"]:
+            continue                                   # commitment point only — no return to show
+        last = by_year[y][-1]
+        pr = last["nav"] / prev_nav - 1
+        br = (last["bench"] / prev_b - 1) if (last["bench"] and prev_b) else None
+        ntr = sum(1 for p in closed if (p["exit_date"] or "")[:4] == y)
+        nw = sum(1 for p in wins if (p["exit_date"] or "")[:4] == y)
+        yearly.append({"year": y + (" (YTD)" if y == str(data_date.year) else ""), "port_pct": fnum(pr * 100),
+                       "bench_pct": fnum(br * 100) if br is not None else None,
+                       "excess_pct": fnum((pr - br) * 100) if br is not None else None,
+                       "nav_end": fnum(last["nav"]), "trades": ntr, "wins": nw,
+                       "max_held": max(h["n"] for h in by_year[y])})
+        prev_nav, prev_b = last["nav"], last["bench"] if last["bench"] else prev_b
+
+    # open book today
+    open_pos = []
+    for p in book.open_positions():
+        sp = snap.get(p["symbol"], {})
+        cur = sp.get("close")
+        open_pos.append({**{k: p[k] for k in ("symbol", "entry_date", "entry", "qty", "qty_open", "stop", "target", "scaled", "rank")},
+                         "name": names.get(p["symbol"], ""), "ltp": cur,
+                         "pnl_pct": fnum((cur / p["entry"] - 1) * 100) if cur else None,
+                         "unrealised": fnum((cur - p["entry"]) * p["qty_open"]) if cur else None,
+                         "value": fnum(cur * p["qty_open"]) if cur else None,
+                         "to_stop_pct": fnum((cur / p["stop"] - 1) * 100) if cur else None,
+                         "to_target_pct": fnum((p["target"] / cur - 1) * 100) if (cur and not p["scaled"]) else None,
+                         "months": months_between(p["entry_date"], str(data_date.date()))})
+    open_pos.sort(key=lambda r: (r["to_stop_pct"] if r["to_stop_pct"] is not None else 1e9))
+
+    log(f"{pname}: backtest {commit_key}->{hist[-1]['date']}  NAV {navs[-1]:,.0f}  CAGR {cagr*100 if cagr else float('nan'):.2f}%  "
+        f"trades {len(closed)} closed / {len(open_pos)} open  MDD {mdd*100:.1f}%")
+    return {
+        "start": str(commit_day.date()), "first_signal_month": months[0], "last_month": months[-1], "as_of": hist[-1]["date"],
+        "years": round(years, 2), "capital": S.CAPITAL, "benchmark_source": bench_label, "bench_from": bench_from,
+        "metrics": {
+            "final_value": fnum(navs[-1]), "net_profit": fnum(navs[-1] - S.CAPITAL), "total_return_pct": fnum((navs[-1] / S.CAPITAL - 1) * 100),
+            "cagr_pct": fnum(cagr * 100) if cagr is not None else None,
+            "bench_return_pct": fnum(bret * 100) if bret is not None else None, "bench_cagr_pct": fnum(bcagr * 100) if bcagr is not None else None,
+            "excess_cagr_pct": fnum((cagr - bcagr) * 100) if (cagr is not None and bcagr is not None) else None,
+            "return_same_window_pct": fnum(ret_same_window * 100) if ret_same_window is not None else None,
+            "max_dd_pct": fnum(mdd * 100), "sharpe": fnum(sharpe), "calmar": fnum(calmar),
+            "total_trades": len(closed), "open_trades": len(open_pos), "wins": len(wins), "losses": len(losses),
+            "win_rate_pct": fnum(len(wins) / len(closed) * 100) if closed else None,
+            "profit_factor": fnum(gross_win / gross_loss) if gross_loss > 0 else None,
+            "avg_win_pct": fnum(np.mean([p["realised"] / p["buy_value"] * 100 for p in wins])) if wins else None,
+            "avg_loss_pct": fnum(np.mean([p["realised"] / p["buy_value"] * 100 for p in losses])) if losses else None,
+            "avg_holding_months": fnum(np.mean([months_between(p["entry_date"], p["exit_date"]) for p in closed])) if closed else None,
+            "max_stocks_held": max(h["n"] for h in hist), "avg_stocks_held": fnum(np.mean([h["n"] for h in hist[1:]])) if len(hist) > 1 else 0,
+            "charges_paid": fnum(charges), "realised_pnl": fnum(realised_total),
+            "unrealised_pnl": fnum(sum((r["unrealised"] or 0) for r in open_pos)),
+            "gross_profit": fnum(gross_win), "gross_loss": fnum(-gross_loss),
+            "best_year": max(yearly, key=lambda y: y["port_pct"] or -1e9)["year"] if yearly else None,
+            "worst_year": min(yearly, key=lambda y: y["port_pct"] if y["port_pct"] is not None else 1e9)["year"] if yearly else None,
+            "exit_reasons": reasons, "cash_now": fnum(cash_now), "invested_now": fnum(inv_now),
+        },
+        "history": [{"date": h["date"], "nav": h["nav"], "bench": h["bench"], "n": h["n"], "dd": dd} for h, dd in zip(hist, dd_series)],
+        "yearly": yearly, "open_positions": open_pos, "trades": trades,
+    }
 
 
 # ----------------------------------------------------------------------------- main
@@ -164,6 +361,7 @@ def main(mock: bool = False, offline: bool = False):
 
     # ---- per-symbol indicators & ticker-level state
     snap: dict[str, dict] = {}
+    monthly: dict[str, pd.DataFrame] = {}
     entries_by_month: dict[str, dict[str, dict]] = {}     # month -> symbol -> candidate record
     prev_month_low: dict[str, dict[str, float]] = {}     # month -> symbol -> low of the previous month
     for sym in all_syms:
@@ -173,6 +371,7 @@ def main(mock: bool = False, offline: bool = False):
             continue
         m = to_monthly(d)
         ind = S.calc_ind(m)
+        monthly[sym] = ind
         comp = ind[ind["month"] <= completed_key]
         run = ind[ind["month"] == running_key]
         if comp.empty:
@@ -238,7 +437,7 @@ def main(mock: bool = False, offline: bool = False):
         if state is None:
             state = {"portfolio": pname, "inception": str(inception_day.date()), "capital": S.CAPITAL,
                      "cash_units": S.CAPITAL / float(nsei.loc[inception_day, "Close"]),
-                     "ranking": cfg["ranking"], "created": now_ist.isoformat()}
+                     "ranking": cfg["ranking"], "created": now_ist.isoformat(), "version": LEDGER_VERSION}
         book = S.Book(state)
         bench, bench_label, bw = (None, "", []) if mock else load_benchmark(pname, start=HISTORY_START, log=log)
         if mock:
@@ -431,6 +630,9 @@ def main(mock: bool = False, offline: bool = False):
             "open_positions": open_pos, "watch_entry": wl_entry, "watch_exit": wl_exit,
             "universe": uni_rows,
             "events": state["events"][-200:],
+            "backtest": run_backtest(pname, uni, cfg["ranking"], monthly, entries_by_month, nsei_m, month_last_day,
+                                     bench, bench_label, names, snap, data_date, float(nsei["Close"].iloc[-1]),
+                                     completed_key, log),
         }
 
     # ---- market status

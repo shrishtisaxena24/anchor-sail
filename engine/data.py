@@ -19,7 +19,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 CACHE_DIR = ROOT / "data" / "cache"
 
-HISTORY_START = "2015-01-01"       # >= 65 months of warm-up before any signal we act on
+HISTORY_START = "2010-07-01"       # 65+ months of warm-up before the 2016-01 backtest start
 NIFTY_CASH = "^NSEI"
 
 # Benchmarks: ordered list of (yahoo symbol, label, kind). kind = "index" | "etf-proxy"

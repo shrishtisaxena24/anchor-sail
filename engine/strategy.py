@@ -305,6 +305,9 @@ class Book:
                 records.append(rec); continue
             price = c["close"]
             qty = int(math.floor(size / price))
+            if qty <= 0:
+                rec["status"] = "Price above slot size"; rec["qty"] = 0
+                records.append(rec); continue
             cash_avail = self.cash_value(nsei_close)
             while qty > 0 and qty * price + buy_cost(qty * price) > cash_avail:
                 qty -= 1

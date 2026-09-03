@@ -25,6 +25,24 @@ corpus / 25 (compounding), max 25 positions, idle cash earns the Nifty 50 (^NSEI
 4. **Universe** — every stock with latest OHLC, day change, %R(14) for the completed month and
    the running month, EMA 5/15/50, armed/trend flags, score, and a state tag.
 
+## Backtest view (2016 → today)
+
+The BACKTEST switch on each portfolio runs the identical engine on monthly bars from the
+**31 Dec 2015 close** (₹26L committed, first entries on the Jan-2016 close) to the last
+completed month, then marks the resulting book to market at today's prices. It reuses the same
+`Book` class as the live ledger — same slots, ranking, cost model and Nifty-ETF cash leg — so
+the two views cannot drift apart. It shows key metrics (CAGR from the commitment date, max
+drawdown on monthly NAV, Sharpe with rf = 0, Calmar, win rate, profit factor, average win/loss,
+holding period, charges), growth of capital vs the benchmark scaled to the same starting
+capital, drawdown, stocks held, calendar-year returns, the book the strategy would hold today
+with its stops, and the full trade log. It is recomputed on every run from the freshly
+downloaded history (nothing is stored), so a data revision shows up immediately rather than
+silently. Price history is downloaded from July 2010 so the indicators are fully warmed by 2016.
+
+Benchmark history: Yahoo's `NIFTYMIDCAP150.NS` / `NIFTYSMLCAP250.NS` series may start later
+than 2016; the benchmark CAGR is then measured from the first available date and the page says
+so. Drop the official CSV from niftyindices.com into `data/benchmarks/` for the full window.
+
 ## How the engine follows the brief
 
 * `engine/strategy.py` — indicators (`calc_ind`), per-stock monthly state machine
@@ -51,6 +69,11 @@ corpus / 25 (compounding), max 25 positions, idle cash earns the Nifty 50 (^NSEI
   is reported as "Insufficient cash".
 * **Cash leg** is held as Nifty 50 units (mark-to-market daily), which equals applying the
   ^NSEI return to cash.
+* **Warm-up**: a stock produces signals once %R(14) is computable (14 monthly bars), matching a
+  reference that treats indicators as valid when non-NaN; 65+ months of history are downloaded
+  before 2016 so long-listed names are fully warmed. Recently listed stocks join after 14 months.
+* **Ledger version**: `LEDGER_VERSION` in `build.py` is bumped when the signal engine changes; an
+  older ledger is rebuilt deterministically from the inception close on the next run.
 * **Same-bar re-entry**: a stock may re-enter on the same monthly bar its previous per-stock
   position exited if all three conditions hold.
 

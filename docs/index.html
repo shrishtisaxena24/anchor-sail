@@ -6,120 +6,131 @@
 <title>Anchor & Sail — Live Signals</title>
 <style>
 :root{
-  color-scheme: light;
-  --bg:#f5f5f3; --surface:#ffffff; --surface-2:#f0efec; --border:#e2e1dc; --border-2:#cfcec8;
-  --text:#0b0b0b; --text-2:#52514e; --text-3:#8a897f;
-  --s1:#2a78d6; --s2:#eb6834; --good:#008300; --warn:#eda100; --bad:#e34948; --violet:#4a3aa7; --aqua:#1baf7a;
-  --good-bg:#e6f4e6; --bad-bg:#fdeaea; --warn-bg:#fff4dc; --blue-bg:#e6f0fb; --violet-bg:#ece9f8;
+  color-scheme: dark;
+  --bg:#0a0e1a; --bg2:#0d1326; --surface:#111a2e; --surface-2:#16213a; --surface-3:#1b2742; --border:#1f2b47; --border-2:#2a3a5e;
+  --text:#e8eefb; --text-2:#9fb0cc; --text-3:#6b7a99;
+  --teal:#2dd4bf; --cyan:#38bdf8; --pink:#f472b6; --rose:#fb7185; --green:#34d399; --amber:#fbbf24; --violet:#a78bfa; --blue:#60a5fa;
+  --good:#34d399; --bad:#fb7185; --warn:#fbbf24;
+  --good-bg:rgba(52,211,153,.13); --bad-bg:rgba(251,113,133,.14); --warn-bg:rgba(251,191,36,.14); --teal-bg:rgba(45,212,191,.14); --pink-bg:rgba(244,114,182,.14); --violet-bg:rgba(167,139,250,.16); --grey-bg:rgba(159,176,204,.12);
+  --s1:var(--teal); --s2:var(--pink);
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-}
-@media (prefers-color-scheme: dark){
-  :root{
-    color-scheme: dark;
-    --bg:#131312; --surface:#1a1a19; --surface-2:#232322; --border:#2e2e2c; --border-2:#3f3f3c;
-    --text:#ffffff; --text-2:#c3c2b7; --text-3:#8a897f;
-    --s1:#3987e5; --s2:#d95926; --good:#3cae3c; --warn:#c98500; --bad:#e66767; --violet:#9085e9; --aqua:#199e70;
-    --good-bg:#12301a; --bad-bg:#3a1a1a; --warn-bg:#3a2d10; --blue-bg:#14273f; --violet-bg:#242046;
-  }
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif}
-a{color:var(--s1)}
-.wrap{max-width:1500px;margin:0 auto;padding:16px 20px 60px}
-header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;padding:8px 0 14px;border-bottom:1px solid var(--border)}
-h1{font-size:22px;margin:0;letter-spacing:-.01em}
-h1 small{font-weight:500;color:var(--text-2);font-size:14px;margin-left:8px}
-.meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--text-2);font-size:13px;align-items:center}
+body{background:
+  radial-gradient(900px 500px at -10% -10%, rgba(56,189,248,.14), transparent 60%),
+  radial-gradient(800px 500px at 110% 0%, rgba(167,139,250,.14), transparent 60%),
+  radial-gradient(700px 500px at 50% 120%, rgba(244,114,182,.08), transparent 60%),
+  var(--bg); min-height:100vh}
+a{color:var(--cyan)}
+.wrap{max-width:1540px;margin:0 auto;padding:14px 22px 70px}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;padding:10px 0 14px;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--amber),#f59e0b);color:#1a1200;font-weight:900;font-size:13px;display:grid;place-items:center;letter-spacing:-.02em;box-shadow:0 0 24px rgba(251,191,36,.25)}
+h1{font-size:18px;margin:0;letter-spacing:.14em;text-transform:uppercase;font-weight:800}
+h1 small{display:block;letter-spacing:0;text-transform:none;font-weight:500;color:var(--text-2);font-size:12px;margin-top:2px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--text-2);font-size:12.5px;align-items:center}
 .meta b{color:var(--text)}
-.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid transparent;white-space:nowrap}
-.pill.live{background:var(--good-bg);color:var(--good)}
-.pill.closed{background:var(--surface-2);color:var(--text-2)}
-.pill.stale{background:var(--warn-bg);color:var(--warn)}
-button{font:inherit;cursor:pointer;border:1px solid var(--border-2);background:var(--surface);color:var(--text);border-radius:8px;padding:6px 12px}
-button:hover{border-color:var(--text-3)}
-.banner{margin:14px 0 0;padding:10px 14px;border-radius:10px;background:var(--warn-bg);border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);font-size:13px}
-.banner summary{cursor:pointer;font-weight:600;color:var(--text)}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11.5px;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+.pill.live{background:var(--good-bg);color:var(--green);box-shadow:0 0 0 1px rgba(52,211,153,.35) inset}
+.pill.closed{background:var(--grey-bg);color:var(--text-2)}
+.pill.stale{background:var(--warn-bg);color:var(--amber)}
+button{font:inherit;cursor:pointer;border:1px solid var(--border-2);background:var(--surface);color:var(--text);border-radius:9px;padding:7px 13px}
+button:hover{border-color:var(--teal);color:#fff}
+.banner{margin:14px 0 0;padding:10px 14px;border-radius:12px;background:var(--warn-bg);border:1px solid rgba(251,191,36,.35);font-size:13px}
+.banner summary{cursor:pointer;font-weight:600;color:var(--amber)}
 .banner ul{margin:8px 0 0;padding-left:18px;color:var(--text-2)}
-.banner.err{background:var(--bad-bg);border-color:color-mix(in srgb,var(--bad) 40%,transparent)}
-.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:18px 0 10px}
-.tab{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:12px 14px;text-align:left;cursor:pointer;transition:border-color .15s}
-.tab:hover{border-color:var(--text-3)}
-.tab.active{border-color:var(--s1);box-shadow:0 0 0 2px color-mix(in srgb,var(--s1) 25%,transparent)}
-.tab .name{font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:baseline}
-.tab .name span{font-size:11px;color:var(--text-3);font-weight:500}
+.banner.err{background:var(--bad-bg);border-color:rgba(251,113,133,.4)} .banner.err summary{color:var(--rose)}
+.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0 12px}
+.tab{border:1px solid var(--border);background:linear-gradient(180deg,var(--surface),var(--bg2));border-radius:14px;padding:13px 15px;text-align:left;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.tab:hover{border-color:var(--border-2);transform:translateY(-1px)}
+.tab.active{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal), 0 10px 40px rgba(45,212,191,.12)}
+.tab.active::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--teal),var(--cyan),var(--pink))}
+.tab .name{font-weight:800;font-size:15px;display:flex;justify-content:space-between;align-items:baseline;letter-spacing:.04em}
+.tab .name span{font-size:10.5px;color:var(--text-3);font-weight:600;letter-spacing:.03em}
 .tab .sub{color:var(--text-2);font-size:12px;margin-top:2px}
-.tab .row{display:flex;gap:14px;margin-top:8px;font-size:12px;color:var(--text-2)}
+.tab .row{display:flex;gap:14px;margin-top:9px;font-size:12px;color:var(--text-3);flex-wrap:wrap}
 .tab .row b{color:var(--text);font-variant-numeric:tabular-nums}
-.pos{color:var(--good)} .neg{color:var(--bad)} .mut{color:var(--text-3)}
-section{margin-top:22px}
-.sec-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 8px}
-.sec-h h2{font-size:17px;margin:0}
-.sec-h .n{font-size:12px;color:var(--text-3)}
+.pos{color:var(--green)} .neg{color:var(--rose)} .mut{color:var(--text-3)}
+.switch{display:flex;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:5px;width:max-content;margin:6px 0 4px}
+.switch button{border:none;background:transparent;color:var(--text-2);padding:8px 16px;border-radius:9px;font-weight:700;letter-spacing:.03em;font-size:12.5px}
+.switch button.on{background:linear-gradient(135deg,var(--teal),var(--cyan));color:#04121a}
+.switch button small{display:block;font-weight:500;letter-spacing:0;font-size:11px;opacity:.85}
+section{margin-top:26px}
+.sec-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 10px}
+.sec-h .num{width:28px;height:28px;border-radius:8px;background:var(--teal-bg);color:var(--teal);font-weight:800;display:grid;place-items:center;font-size:13px;box-shadow:0 0 0 1px rgba(45,212,191,.35) inset}
+.sec-h h2{font-size:18px;margin:0;font-weight:800}
 .sec-h .desc{font-size:12px;color:var(--text-2)}
-h3{font-size:13px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2);font-weight:600}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0;overflow:hidden}
-.tblwrap{overflow-x:auto}
+h3{font-size:11.5px;margin:18px 0 8px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-2);font-weight:700}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0;overflow:hidden}
+.tblwrap{overflow-x:auto;max-height:640px;overflow-y:auto}
 table{border-collapse:collapse;width:100%;font-size:13px}
-th,td{padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-th{position:sticky;top:0;background:var(--surface-2);color:var(--text-2);font-weight:600;font-size:12px;cursor:pointer;user-select:none}
+th,td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+th{position:sticky;top:0;background:var(--surface-2);color:var(--text-2);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;user-select:none;z-index:1}
 th.l,td.l{text-align:left}
-th:hover{color:var(--text)}
-th .arrow{opacity:.5;font-size:10px;margin-left:3px}
+th:hover{color:var(--teal)}
+th .arrow{opacity:.7;font-size:9px;margin-left:3px;color:var(--teal)}
 tr:last-child td{border-bottom:none}
-tbody tr:hover td{background:color-mix(in srgb,var(--s1) 6%,transparent)}
-td.sym{font-weight:700;text-align:left}
-td.sym small{display:block;font-weight:400;color:var(--text-3);font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis}
-.empty{padding:16px;color:var(--text-3);font-size:13px;text-align:center}
-.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.02em}
-.tag.exit{background:var(--bad-bg);color:var(--bad)}
-.tag.entry{background:var(--good-bg);color:var(--good)}
-.tag.scale{background:var(--warn-bg);color:var(--warn)}
-.tag.held{background:var(--blue-bg);color:var(--s1)}
+tbody tr:hover td{background:rgba(56,189,248,.06)}
+td.sym{font-weight:700;text-align:left;color:#fff}
+td.sym small{display:block;font-weight:400;color:var(--text-3);font-size:11px;max-width:230px;overflow:hidden;text-overflow:ellipsis}
+.empty{padding:18px;color:var(--text-3);font-size:13px;text-align:center}
+.tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:800;letter-spacing:.04em}
+.tag.exit{background:var(--bad-bg);color:var(--rose)}
+.tag.entry{background:var(--good-bg);color:var(--green)}
+.tag.scale{background:var(--warn-bg);color:var(--amber)}
+.tag.held{background:var(--teal-bg);color:var(--teal)}
 .tag.armed{background:var(--violet-bg);color:var(--violet)}
-.tag.trend{background:var(--good-bg);color:var(--good)}
-.tag.grey{background:var(--surface-2);color:var(--text-2)}
-.tag.today{background:var(--bad);color:#fff}
-.tag.noslot{background:var(--surface-2);color:var(--text-2)}
-.ok{color:var(--good);font-weight:700} .no{color:var(--text-3)}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
-.kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
-.kpi .k{font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em}
-.kpi .v{font-size:20px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.kpi .d{font-size:12px;color:var(--text-2);margin-top:2px}
+.tag.pink{background:var(--pink-bg);color:var(--pink)}
+.tag.grey{background:var(--grey-bg);color:var(--text-2)}
+.tag.today{background:var(--rose);color:#1a0508}
+.tag.noslot{background:var(--grey-bg);color:var(--text-2)}
+.ok{color:var(--green);font-weight:700} .no{color:var(--text-3)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+.kpi .v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em;color:#fff}
+.kpi .k{font-size:10.5px;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;margin-top:6px;font-weight:700}
+.kpi .d{font-size:11.5px;color:var(--text-2);margin-top:3px}
+.kpi .v.teal{color:var(--teal)} .kpi .v.cyan{color:var(--cyan)} .kpi .v.pink{color:var(--pink)} .kpi .v.green{color:var(--green)} .kpi .v.amber{color:var(--amber)} .kpi .v.rose{color:var(--rose)} .kpi .v.violet{color:var(--violet)}
 .perf{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:12px}
-@media (max-width:980px){.perf{grid-template-columns:1fr}.tabs{grid-template-columns:repeat(2,1fr)}}
-.chart{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px 6px}
-.chart .t{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px}
-.chart .t b{font-size:13px}
-.legend{display:flex;gap:14px;font-size:12px;color:var(--text-2)}
-.legend i{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:5px;border-radius:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:1000px){.perf,.two{grid-template-columns:1fr}.tabs{grid-template-columns:repeat(2,1fr)}}
+.chart{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px 8px}
+.chart .t{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+.chart .t b{font-size:13.5px}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--text-2)}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
 svg{display:block;width:100%;height:auto}
-.tt{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--border-2);border-radius:8px;padding:6px 9px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.12);display:none;z-index:5;white-space:nowrap}
-.stats{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:6px 14px}
-.stats div{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.tt{position:absolute;pointer-events:none;background:var(--surface-3);border:1px solid var(--border-2);border-radius:9px;padding:7px 10px;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,.45);display:none;z-index:5;white-space:nowrap;color:var(--text)}
+.stats{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:6px 16px}
+.stats div{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
 .stats div:last-child{border-bottom:none}
 .stats span:first-child{color:var(--text-2)}
-.stats span:last-child{font-variant-numeric:tabular-nums;font-weight:600}
-.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 8px}
-.toolbar input{font:inherit;padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--surface);color:var(--text);min-width:220px}
+.stats span:last-child{font-variant-numeric:tabular-nums;font-weight:700;color:#fff}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 10px}
+.toolbar input{font:inherit;padding:7px 12px;border:1px solid var(--border-2);border-radius:9px;background:var(--surface);color:var(--text);min-width:240px}
+.toolbar input:focus{outline:none;border-color:var(--teal)}
 .toolbar .chips{display:flex;gap:6px;flex-wrap:wrap}
-.chip{border:1px solid var(--border-2);background:var(--surface);border-radius:999px;padding:3px 10px;font-size:12px;cursor:pointer;color:var(--text-2)}
-.chip.on{background:var(--text);color:var(--bg);border-color:var(--text)}
-.note{font-size:12px;color:var(--text-3);margin-top:8px}
-footer{margin-top:30px;color:var(--text-3);font-size:12px;border-top:1px solid var(--border);padding-top:12px;line-height:1.6}
-.stopbar{display:inline-block;width:70px;height:6px;background:var(--surface-2);border-radius:3px;vertical-align:middle;margin-left:6px;position:relative;overflow:hidden}
+.chip{border:1px solid var(--border-2);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:12px;cursor:pointer;color:var(--text-2)}
+.chip.on{background:var(--teal);color:#04121a;border-color:var(--teal);font-weight:700}
+.note{font-size:12px;color:var(--text-3);margin-top:8px;line-height:1.5}
+footer{margin-top:34px;color:var(--text-3);font-size:12px;border-top:1px solid var(--border);padding-top:12px;line-height:1.6}
+.stopbar{display:inline-block;width:70px;height:6px;background:var(--surface-3);border-radius:3px;vertical-align:middle;margin-left:6px;position:relative;overflow:hidden}
 .stopbar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
-#loading{padding:60px;text-align:center;color:var(--text-2)}
+#loading{padding:60px;text-align:center;color:var(--text-2);line-height:1.7}
+.hero{background:linear-gradient(135deg,rgba(45,212,191,.12),rgba(56,189,248,.08) 50%,rgba(244,114,182,.10));border:1px solid var(--border-2);border-radius:14px;padding:14px 18px;margin-bottom:12px;font-size:13.5px;color:var(--text-2)}
+.hero b{color:#fff}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div>
-      <h1>Anchor &amp; Sail <small>live signal dashboard · four portfolios</small></h1>
-      <div class="meta" id="meta"></div>
+    <div class="brand">
+      <div class="logo">A&amp;S</div>
+      <h1>Anchor &amp; Sail <small>live signal dashboard · four portfolios · live book and 2016→today backtest</small></h1>
     </div>
-    <div style="display:flex;gap:8px;align-items:center">
+    <div class="meta" id="meta"></div>
+    <div style="display:flex;gap:10px;align-items:center">
       <span class="mut" id="autoref" style="font-size:12px"></span>
       <button id="refresh">↻ Refresh now</button>
     </div>
@@ -127,6 +138,7 @@ footer{margin-top:30px;color:var(--text-3);font-size:12px;border-top:1px solid v
   <div id="warnings"></div>
   <div id="loading">Loading latest data…</div>
   <div id="tabs" class="tabs" hidden></div>
+  <div id="switch" class="switch" hidden></div>
   <main id="main"></main>
   <footer id="foot"></footer>
 </div>
@@ -136,18 +148,19 @@ footer{margin-top:30px;color:var(--text-3);font-size:12px;border-top:1px solid v
 (function(){
 'use strict';
 const $ = (s, el=document) => el.querySelector(s);
-const el = (tag, attrs={}, ...kids) => { const n=document.createElement(tag); for(const [k,v] of Object.entries(attrs)){ if(k==='class') n.className=v; else if(k==='html') n.innerHTML=v; else if(k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k,v);} for(const k of kids){ if(k==null) continue; n.append(k.nodeType?k:document.createTextNode(k)); } return n; };
+const el = (tag, attrs={}, ...kids) => { const n=document.createElement(tag); for(const [k,v] of Object.entries(attrs)){ if(v==null) continue; if(k==='class') n.className=v; else if(k==='html') n.innerHTML=v; else if(k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k,v);} for(const k of kids){ if(k==null) continue; n.append(k.nodeType?k:document.createTextNode(k)); } return n; };
 const inr = new Intl.NumberFormat('en-IN', {maximumFractionDigits:0});
 const inr2 = new Intl.NumberFormat('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
-const fR = v => v==null ? '—' : '₹' + inr.format(v);
+const fR = v => v==null ? '—' : (v<0?'−':'') + '₹' + inr.format(Math.abs(v));
 const fP = v => v==null ? '—' : inr2.format(v);
 const fPct = (v, sign=true) => v==null ? '—' : ((sign && v>0)?'+':'') + v.toFixed(2) + '%';
+const fN = (v, d=2) => v==null ? '—' : Number(v).toFixed(d);
 const cls = v => v==null ? 'mut' : v>0 ? 'pos' : v<0 ? 'neg' : '';
 const pctCell = v => { const t=document.createElement('td'); t.className=cls(v); t.textContent=fPct(v); return t; };
 const yesno = b => b==null ? '—' : b ? '✓' : '·';
-const lakh = v => v==null ? '—' : '₹' + (Math.abs(v)>=1e7 ? (v/1e7).toFixed(2)+' Cr' : (v/1e5).toFixed(2)+' L');
+const lakh = v => v==null ? '—' : (v<0?'−':'') + '₹' + (Math.abs(v)>=1e7 ? (Math.abs(v)/1e7).toFixed(2)+' Cr' : (Math.abs(v)/1e5).toFixed(1)+' L');
 
-let DATA=null, active = localStorage.getItem('as_tab') || 'CORE';
+let DATA=null, active = localStorage.getItem('as_tab') || 'CORE', view = localStorage.getItem('as_view') || 'live';
 
 async function load(){
   try{
@@ -171,33 +184,37 @@ function render(){
     el('span', {}, 'Signal month ', el('b', {}, D.completed_month), ' · running ', el('b', {}, D.running_month)),
     el('span', {}, 'Built ', el('b', {}, D.generated_at_ist))
   );
-  // warnings
   const W = $('#warnings'); W.replaceChildren();
   if(D.warnings && D.warnings.length){
     const mock = D.warnings.some(w=>w.startsWith('MOCK'));
-    const det = el('details', {class:'banner' + (mock?' err':''), open: mock ? '' : null});
-    if(!mock) det.removeAttribute('open');
+    const det = el('details', {class:'banner' + (mock?' err':'')});
+    if(mock) det.setAttribute('open','');
     det.append(el('summary', {}, `${D.warnings.length} data warning${D.warnings.length>1?'s':''} — click to expand`),
                el('ul', {}, ...D.warnings.map(w=>el('li', {}, w))));
     W.append(det);
   }
-  // tabs
   const T = $('#tabs'); T.hidden=false; T.replaceChildren();
   for(const [k,P] of Object.entries(D.portfolios)){
-    const pf = P.performance;
+    const pf = P.performance, bt = P.backtest;
     const exitsToday = P.exits.filter(e=>e.today).length;
     const b = el('button', {class:'tab' + (k===active?' active':''), onclick:()=>{active=k; localStorage.setItem('as_tab',k); render();}},
-      el('div', {class:'name'}, P.name, el('span', {}, `${P.universe_label} · rank ${P.ranking?'ON':'OFF'}`)),
+      el('div', {class:'name'}, P.name, el('span', {}, `${P.universe_label} · RANK ${P.ranking?'ON':'OFF'}`)),
       el('div', {class:'sub'}, `vs ${P.benchmark}`),
       el('div', {class:'row'},
-        el('span', {}, 'Port ', el('b', {class:cls(pf.return_pct)}, fPct(pf.return_pct))),
+        el('span', {}, 'Live ', el('b', {class:cls(pf.return_pct)}, fPct(pf.return_pct))),
         el('span', {}, 'Bench ', el('b', {class:cls(pf.bench_return_pct)}, fPct(pf.bench_return_pct))),
         el('span', {}, 'Open ', el('b', {}, `${pf.open_positions}/${pf.slots}`)),
-        el('span', {}, 'Exits today ', el('b', {class: exitsToday?'neg':''}, exitsToday))
+        el('span', {}, 'Exits today ', el('b', {class: exitsToday?'neg':''}, exitsToday)),
+        bt ? el('span', {}, 'Backtest CAGR ', el('b', {class:'pos'}, fPct(bt.metrics.cagr_pct,false))) : null
       ));
     T.append(b);
   }
-  renderPortfolio(D.portfolios[active]);
+  const P = D.portfolios[active];
+  const SW = $('#switch'); SW.hidden=false; SW.replaceChildren(
+    el('button', {class: view==='live'?'on':'', onclick:()=>{view='live'; localStorage.setItem('as_view',view); render();}}, 'LIVE BOOK', el('small',{}, `since ${P.inception} · daily stops`)),
+    el('button', {class: view==='bt'?'on':'', onclick:()=>{view='bt'; localStorage.setItem('as_view',view); render();}}, 'BACKTEST', el('small',{}, P.backtest ? `${P.backtest.start} → ${P.backtest.as_of}` : 'not available'))
+  );
+  if(view==='bt' && P.backtest) renderBacktest(P); else renderPortfolio(P);
   $('#foot').innerHTML = `Strategy: monthly bars · Williams %R(${D.strategy.wr_len}) armed &lt; ${D.strategy.arm}, trigger ≥ ${D.strategy.trigger} · EMA 5 &gt; 15 &gt; 50 · stop −15% · target +30% (50% scale-out, stop to breakeven, then trails previous month's low) · ${D.strategy.slots} slots · size = corpus/25 · idle cash in Nifty 50 ETF (^NSEI) · Indian delivery costs applied.<br>
   Entry signals are generated <b>once a month</b> on the completed close (running month excluded) — the entry table stays the same all month by design. The open book and its stops are re-checked on every run. Universe = today's index members (survivorship bias vs the benchmark is present and unquantified). Prices: Yahoo Finance via yfinance, adjusted. Build time ${D.runtime_sec}s.`;
 }
@@ -220,27 +237,25 @@ function sortable(table, rows, cols, renderRow, defaultKey, defaultDesc){
   thead.append(tr); table.append(thead, tbody); draw();
   return draw;
 }
-
 function tableCard(rows, cols, renderRow, emptyMsg, sortKey, sortDesc){
   const card = el('div', {class:'card'});
   if(!rows.length){ card.append(el('div', {class:'empty'}, emptyMsg)); return card; }
   const wrap = el('div', {class:'tblwrap'}); const table = el('table');
   sortable(table, rows, cols, renderRow, sortKey, sortDesc); wrap.append(table); card.append(wrap); return card;
 }
-
 function symCell(r){ const td=el('td',{class:'sym'}, r.symbol); if(r.name) td.append(el('small',{}, r.name)); return td; }
 function td(v, c){ const t=el('td', {class:c||''}); t.textContent = v; return t; }
+function secHead(n, title, desc){ return el('div', {class:'sec-h'}, el('span',{class:'num'}, n), el('h2', {}, title), desc? el('span', {class:'desc'}, desc):null); }
+const kpi = (v, k, d, c) => el('div', {class:'kpi'}, el('div',{class:'v '+(c||'')},v), el('div',{class:'k'},k), d? el('div',{class:'d'},d):null);
+const signCol = v => v==null ? '' : v>0 ? 'green' : v<0 ? 'rose' : '';
 
+// =============================================================== LIVE VIEW
 function renderPortfolio(P){
   const M = $('#main'); M.replaceChildren();
   const D = DATA, pf = P.performance;
 
-  // ------------------------------------------------------------ 1. SIGNALS
   const s1 = el('section');
-  s1.append(el('div', {class:'sec-h'}, el('h2', {}, `1 · Signals — ${P.name}`),
-    el('span', {class:'desc'}, `${P.universe_label} (${P.universe_size} stocks) · ranking ${P.ranking?'ON':'OFF'} · ₹${inr.format(P.capital)} committed ${P.inception}`)));
-
-  // exits
+  s1.append(secHead('1', `Signals — ${P.name}`, `${P.universe_label} (${P.universe_size} stocks) · ranking ${P.ranking?'ON':'OFF'} · ₹${inr.format(P.capital)} committed ${P.inception}`));
   s1.append(el('h3', {}, `Exit signals — stops / targets hit (this month${P.exits.some(e=>e.today)?', today highlighted':''})`));
   s1.append(tableCard(P.exits, [
       {label:'Stock', left:true, key:'symbol'}, {label:'Action', key:'type'}, {label:'Date', key:'date'}, {label:'Reason', key:'reason', left:true},
@@ -252,8 +267,7 @@ function renderPortfolio(P){
         td(r.realised==null?'—':fR(r.realised), cls(r.realised))); return tr; },
     'No stop or target has been hit this month. Open positions and their live stop levels are listed below.', 'date', true));
 
-  // entries
-  s1.append(el('h3', {}, `Entry signals — ${P.signal_month || D.completed_month} month-end close (valid for the whole of ${D.running_month})`));
+  s1.append(el('h3', {}, `Entry signals — ${P.signal_month || D.completed_month} month-end close · every qualifying stock, whether or not a slot was free · valid for all of ${D.running_month}`));
   s1.append(tableCard(P.entries, [
       {label:'#', key:'rank', desc:false}, {label:'Stock', left:true, key:'symbol'}, {label:'Status', key:'status', left:true}, {label:'Entry (close) ₹', key:'close'},
       {label:'LTP ₹', key:'ltp'}, {label:'vs entry', key:'from_entry_pct'}, {label:'Qty', key:'qty'}, {label:'Size ₹', key:'size'},
@@ -265,57 +279,48 @@ function renderPortfolio(P){
         td(fP(r.wr)), td(fP(r.score)), td(fP(r.ema5)), td(fP(r.ema15)), td(fP(r.ema50))); return tr; },
     `No stock in this universe satisfied Armed + Trigger + Trend on the ${D.completed_month} close. Next signal set: ${D.running_month} month-end.`, 'rank', false));
 
-  // open book
   s1.append(el('h3', {}, `Open book — live stop levels (${pf.open_positions} of ${pf.slots} slots)`));
-  s1.append(tableCard(P.open_positions, [
-      {label:'Stock', left:true, key:'symbol'}, {label:'Entry date', key:'entry_date'}, {label:'Entry ₹', key:'entry'}, {label:'Qty held', key:'qty_open'},
-      {label:'LTP ₹', key:'ltp'}, {label:'P&L %', key:'pnl_pct'}, {label:'Unrealised ₹', key:'unrealised'}, {label:'Stop ₹', key:'stop'},
-      {label:'LTP above stop', key:'to_stop_pct', desc:false, title:'How far the last price sits above the stop. Red when within 5%.'},
-      {label:'Day low', key:'day_low'}, {label:'Target ₹', key:'target'}, {label:'To target', key:'to_target_pct'}, {label:'Scaled', key:'scaled'}, {label:'%R now', key:'wr_p', title:'Running-month %R(14), provisional'}],
-    r => { const tr=el('tr'); const near = r.to_stop_pct!=null && r.to_stop_pct<=5;
-        const bar = el('span',{class:'stopbar'}); const w = r.to_stop_pct==null?0:Math.max(0,Math.min(100, r.to_stop_pct/20*100)); bar.append(el('i',{style:`width:${w}%;background:${near?'var(--bad)':'var(--s1)'}`}));
-        tr.append(symCell(r), td(r.entry_date), td(fP(r.entry)), td(inr.format(r.qty_open)), td(fP(r.ltp)), pctCell(r.pnl_pct), td(fR(r.unrealised), cls(r.unrealised)),
-          td(fP(r.stop), 'l'), el('td',{class: near?'neg':''}, fPct(r.to_stop_pct,false), bar), td(fP(r.day_low)), td(fP(r.target)),
-          td(r.to_target_pct==null?(r.scaled?'done':'—'):fPct(r.to_target_pct,false)), el('td',{}, r.scaled? el('span',{class:'tag scale'},'50% OUT'):'·'), td(fP(r.wr_p))); return tr; },
-    'No open positions.', 'to_stop_pct', false));
+  s1.append(openBookTable(P.open_positions, true));
   M.append(s1);
 
-  // ------------------------------------------------------------ 2. PERFORMANCE
   const s2 = el('section');
-  s2.append(el('div', {class:'sec-h'}, el('h2', {}, `2 · Performance vs ${P.benchmark}`), el('span', {class:'desc'}, `since ${P.inception} · ${pf.days} day${pf.days===1?'':'s'} · benchmark source: ${P.benchmark_source}`)));
+  s2.append(secHead('2', `Performance vs ${P.benchmark}`, `since ${P.inception} · ${pf.days} day${pf.days===1?'':'s'} · benchmark source: ${P.benchmark_source}`));
   const kp = el('div', {class:'kpis'});
-  const kpi = (k, v, d, c) => el('div', {class:'kpi'}, el('div',{class:'k'},k), el('div',{class:'v '+(c||'')},v), el('div',{class:'d'},d||''));
   kp.append(
-    kpi('Portfolio value', fR(pf.nav), `on ₹${inr.format(P.capital)}`),
-    kpi('Portfolio return', fPct(pf.return_pct), pf.cagr_pct!=null? `CAGR ${fPct(pf.cagr_pct)}` : 'absolute since inception', cls(pf.return_pct)),
-    kpi(P.benchmark, fPct(pf.bench_return_pct), pf.bench_cagr_pct!=null? `CAGR ${fPct(pf.bench_cagr_pct)}` : (pf.bench_level? `level ${fP(pf.bench_level)}`:'unavailable'), cls(pf.bench_return_pct)),
-    kpi('Excess return', fPct(pf.alpha_pct), 'portfolio − benchmark', cls(pf.alpha_pct)),
-    kpi('Invested / Cash', `${pf.nav? (pf.invested/pf.nav*100).toFixed(0):0}% / ${pf.nav? (pf.cash/pf.nav*100).toFixed(0):0}%`, `${lakh(pf.invested)} in ${pf.open_positions} stocks · ${lakh(pf.cash)} in Nifty ETF`),
-    kpi('Max drawdown', fPct(pf.max_dd_pct,false), 'on daily NAV', pf.max_dd_pct<0?'neg':''),
+    kpi(fR(pf.nav), 'Portfolio value', `on ₹${inr.format(P.capital)}`, 'amber'),
+    kpi(fPct(pf.return_pct), 'Portfolio return', pf.cagr_pct!=null? `CAGR ${fPct(pf.cagr_pct)}` : 'absolute since inception', signCol(pf.return_pct)),
+    kpi(fPct(pf.bench_return_pct), P.benchmark, pf.bench_cagr_pct!=null? `CAGR ${fPct(pf.bench_cagr_pct)}` : (pf.bench_level? `level ${fP(pf.bench_level)}`:'unavailable'), signCol(pf.bench_return_pct)),
+    kpi(fPct(pf.alpha_pct), 'Excess return', 'portfolio − benchmark', signCol(pf.alpha_pct)),
+    kpi(`${pf.nav? (pf.invested/pf.nav*100).toFixed(0):0}% / ${pf.nav? (pf.cash/pf.nav*100).toFixed(0):0}%`, 'Invested / Cash', `${lakh(pf.invested)} in ${pf.open_positions} stocks · ${lakh(pf.cash)} in Nifty ETF`, 'cyan'),
+    kpi(fPct(pf.max_dd_pct,false), 'Max drawdown', 'on daily NAV', pf.max_dd_pct<0?'rose':''),
   );
   s2.append(kp);
+  const H = P.history.filter(h=>h.nav!=null);
+  const nav0 = H.length? H[0].nav : 1, b0 = H.find(h=>h.bench!=null)?.bench;
   const grid = el('div', {class:'perf'});
-  grid.append(chartCard(P), el('div', {class:'stats'},
-    el('div',{}, el('span',{},'Realised P&L (net of costs)'), el('span',{class:cls(pf.realised)}, fR(pf.realised))),
-    el('div',{}, el('span',{},'Unrealised P&L'), el('span',{class:cls(pf.unrealised)}, fR(pf.unrealised))),
-    el('div',{}, el('span',{},'Closed trades / wins'), el('span',{}, `${pf.closed_trades} / ${pf.wins}`)),
-    el('div',{}, el('span',{},'Open positions'), el('span',{}, `${pf.open_positions} of ${pf.slots}`)),
-    el('div',{}, el('span',{},'Position size now (corpus/25)'), el('span',{}, fR(pf.nav/pf.slots))),
-    el('div',{}, el('span',{},'Benchmark base → now'), el('span',{}, pf.bench_base? `${fP(pf.bench_base)} → ${fP(pf.bench_level)}` : '—')),
-    el('div',{}, el('span',{},'Ranking when signals > slots'), el('span',{}, P.ranking? 'ON — highest score first' : 'OFF — first-come (universe order)')),
-  ));
+  grid.append(lineChart({title:`Growth of 100 — ${P.name} vs ${P.benchmark}`, dates:H.map(h=>h.date),
+      series:[{name:P.name, color:'var(--s1)', values:H.map(h=>h.nav/nav0*100)}, {name:P.benchmark, color:'var(--s2)', values:H.map(h=>(b0&&h.bench!=null)?h.bench/b0*100:null)}],
+      fmt:v=>v.toFixed(2), base:100, extra:(i)=>`(${fR(H[i].nav)})`, minPts:2}),
+    el('div', {class:'stats'},
+      el('div',{}, el('span',{},'Realised P&L (net of costs)'), el('span',{class:cls(pf.realised)}, fR(pf.realised))),
+      el('div',{}, el('span',{},'Unrealised P&L'), el('span',{class:cls(pf.unrealised)}, fR(pf.unrealised))),
+      el('div',{}, el('span',{},'Closed trades / wins'), el('span',{}, `${pf.closed_trades} / ${pf.wins}`)),
+      el('div',{}, el('span',{},'Open positions'), el('span',{}, `${pf.open_positions} of ${pf.slots}`)),
+      el('div',{}, el('span',{},'Position size now (corpus/25)'), el('span',{}, fR(pf.nav/pf.slots))),
+      el('div',{}, el('span',{},'Benchmark base → now'), el('span',{}, pf.bench_base? `${fP(pf.bench_base)} → ${fP(pf.bench_level)}` : '—')),
+      el('div',{}, el('span',{},'Ranking when signals > slots'), el('span',{}, P.ranking? 'ON — highest score first' : 'OFF — first-come (universe order)')),
+    ));
   s2.append(grid);
   M.append(s2);
 
-  // ------------------------------------------------------------ 3. WATCHLIST
   const s3 = el('section');
-  s3.append(el('div', {class:'sec-h'}, el('h2', {}, '3 · Watchlist'), el('span', {class:'desc'}, 'armed names one condition away from an entry, and holdings close to their stop or target')));
+  s3.append(secHead('3', 'Watchlist', 'armed names one condition away from an entry, and holdings close to their stop or target'));
   s3.append(el('h3', {}, `Entry watchlist — armed (%R dipped below −40), waiting for the last condition · ${P.watch_entry.length}`));
   s3.append(tableCard(P.watch_entry, [
       {label:'Stock', left:true, key:'symbol'}, {label:'Waiting for', key:'waiting_for', left:true}, {label:'Would trigger if month closed today?', key:'would_trigger'},
       {label:'LTP ₹', key:'close'}, {label:'Day %', key:'chg_pct'}, {label:`%R (${D.completed_month})`, key:'wr'}, {label:'%R now', key:'wr_p'},
       {label:`Trend (${D.completed_month})`, key:'trend'}, {label:'Trend now', key:'trend_p'}, {label:'EMA5', key:'ema5'}, {label:'EMA15', key:'ema15'}, {label:'EMA50', key:'ema50'}, {label:'Score', key:'score'}],
-    r => { const tr=el('tr'); tr.append(symCell(r), td(r.waiting_for,'l'), el('td',{}, r.would_trigger? el('span',{class:'tag entry'},'YES — on track'): el('span',{class:'no'},'not yet')),
+    r => { const tr=el('tr'); tr.append(symCell(r), td(r.waiting_for,'l'), el('td',{}, r.would_trigger? el('span',{class:'tag entry'},'YES — ON TRACK'): el('span',{class:'no'},'not yet')),
         td(fP(r.close)), pctCell(r.chg_pct), td(fP(r.wr)), td(fP(r.wr_p), r.wr_p!=null && r.wr_p>=-20 ? 'ok':''), el('td',{class:r.trend?'ok':'no'}, yesno(r.trend)), el('td',{class:r.trend_p?'ok':'no'}, yesno(r.trend_p)),
         td(fP(r.ema5)), td(fP(r.ema15)), td(fP(r.ema50)), td(fP(r.score))); return tr; },
     'Nothing is armed and one step away right now.', 'would_trigger', true));
@@ -328,9 +333,8 @@ function renderPortfolio(P){
     'No holding is within 5% of its stop or target.', 'to_stop_pct', false));
   M.append(s3);
 
-  // ------------------------------------------------------------ 4. UNIVERSE
   const s4 = el('section');
-  s4.append(el('div', {class:'sec-h'}, el('h2', {}, `4 · Universe — ${P.universe_label}`), el('span', {class:'n'}, `${P.universe_size} stocks · latest OHLC + monthly indicators (${D.completed_month} close; "now" = running month, provisional)`)));
+  s4.append(secHead('4', `Universe — ${P.universe_label}`, `${P.universe_size} stocks · latest OHLC + monthly indicators (${D.completed_month} close; "now" = running month, provisional)`));
   const tb = el('div', {class:'toolbar'});
   const inp = el('input', {placeholder:'Filter symbol / name…', type:'search'});
   const states = ['ALL','HELD','ENTRY SIGNAL','ARMED + TREND','ARMED','IN CYCLE','—','NO DATA'];
@@ -345,7 +349,7 @@ function renderPortfolio(P){
       {label:'Day %', key:'chg_pct'}, {label:'%R(14)', key:'wr', title:'Completed month'}, {label:'%R now', key:'wr_p'}, {label:'Armed', key:'armed'}, {label:'Trend', key:'trend'}, {label:'Trend now', key:'trend_p'},
       {label:'EMA5', key:'ema5'}, {label:'EMA15', key:'ema15'}, {label:'EMA50', key:'ema50'}, {label:'Score', key:'score'}, {label:'Month close', key:'month_close'}],
       r => { const tr=el('tr'); if(r.nodata){ tr.append(symCell(r), el('td',{class:'l'}, el('span',{class:'tag grey'},'NO DATA')), ...Array(16).fill(0).map(()=>td('—','mut'))); return tr; }
-        const tagc = {HELD:'held','ENTRY SIGNAL':'entry','ARMED + TREND':'armed',ARMED:'armed','IN CYCLE':'grey','—':'grey'}[r.state]||'grey';
+        const tagc = {HELD:'held','ENTRY SIGNAL':'entry','ARMED + TREND':'armed',ARMED:'pink','IN CYCLE':'grey','—':'grey'}[r.state]||'grey';
         tr.append(symCell(r), el('td',{class:'l'}, el('span',{class:'tag '+tagc}, r.state)), td(r.date + (r.stale?' ⚠':''), r.stale?'neg':'mut'), td(fP(r.open)), td(fP(r.high)), td(fP(r.low)), td(fP(r.close)), pctCell(r.chg_pct),
           td(fP(r.wr), r.wr!=null && r.wr < -40 ? 'neg' : (r.wr!=null && r.wr>=-20 ? 'ok':'')), td(fP(r.wr_p)), el('td',{class:r.armed?'ok':'no'}, yesno(r.armed)), el('td',{class:r.trend?'ok':'no'}, yesno(r.trend)), el('td',{class:r.trend_p?'ok':'no'}, yesno(r.trend_p)),
           td(fP(r.ema5)), td(fP(r.ema15)), td(fP(r.ema50)), td(fP(r.score), cls(r.score)), td(fP(r.month_close))); return tr; },
@@ -360,45 +364,140 @@ function renderPortfolio(P){
   M.append(s4);
 }
 
-// ---------------------------------------------------------------- chart: NAV vs benchmark rebased to 100
-function chartCard(P){
+function openBookTable(rows, withWr){
+  const cols = [
+      {label:'Stock', left:true, key:'symbol'}, {label:'Entry date', key:'entry_date'}, {label:'Entry ₹', key:'entry'}, {label:'Qty held', key:'qty_open'},
+      {label:'LTP ₹', key:'ltp'}, {label:'P&L %', key:'pnl_pct'}, {label:'Unrealised ₹', key:'unrealised'}, {label:'Value ₹', key:'value'}, {label:'Stop ₹', key:'stop'},
+      {label:'LTP above stop', key:'to_stop_pct', desc:false, title:'How far the last price sits above the stop. Red when within 5%.'},
+      {label:'Target ₹', key:'target'}, {label:'To target', key:'to_target_pct'}, {label:'Scaled', key:'scaled'}];
+  if(withWr) cols.push({label:'Day low', key:'day_low'}, {label:'%R now', key:'wr_p', title:'Running-month %R(14), provisional'}); else cols.push({label:'Months held', key:'months'});
+  return tableCard(rows, cols,
+    r => { const tr=el('tr'); const near = r.to_stop_pct!=null && r.to_stop_pct<=5;
+        const bar = el('span',{class:'stopbar'}); const w = r.to_stop_pct==null?0:Math.max(0,Math.min(100, r.to_stop_pct/20*100)); bar.append(el('i',{style:`width:${w}%;background:${near?'var(--rose)':'var(--teal)'}`}));
+        tr.append(symCell(r), td(r.entry_date), td(fP(r.entry)), td(inr.format(r.qty_open)), td(fP(r.ltp)), pctCell(r.pnl_pct), td(fR(r.unrealised), cls(r.unrealised)), td(fR(r.value)),
+          td(fP(r.stop)), el('td',{class: near?'neg':''}, fPct(r.to_stop_pct,false), bar), td(fP(r.target)),
+          td(r.to_target_pct==null?(r.scaled?'done':'—'):fPct(r.to_target_pct,false)), el('td',{}, r.scaled? el('span',{class:'tag scale'},'50% OUT'):'·'));
+        if(withWr) tr.append(td(fP(r.day_low)), td(fP(r.wr_p))); else tr.append(td(r.months));
+        return tr; },
+    'No open positions.', 'to_stop_pct', false);
+}
+
+// =============================================================== BACKTEST VIEW
+function renderBacktest(P){
+  const M = $('#main'); M.replaceChildren();
+  const B = P.backtest, m = B.metrics;
+  const hero = el('div',{class:'hero'}, el('b',{}, `${P.name} · ${P.universe_label}`), ` — had this strategy been run from `, el('b',{}, B.start), ` with ₹26,00,000 (first entries on the ${B.first_signal_month} close), the same rules, ${DATA.strategy.slots} slots, ranking ${P.ranking?'ON':'OFF'} and every charge, the book would be worth `, el('b',{}, fR(m.final_value)), ` today (${B.as_of}), marked to market on live prices — a CAGR of `, el('b',{}, fPct(m.cagr_pct,false)), ` over ${B.years} years versus `, el('b',{}, m.bench_cagr_pct!=null? fPct(m.bench_cagr_pct,false):'n/a'), ` for the ${P.benchmark}.`);
+  M.append(hero);
+
+  const s1 = el('section');
+  s1.append(secHead('1', 'Key metrics', `${B.start} → ${B.as_of} · benchmark: ${B.benchmark_source}${B.bench_from && B.bench_from > B.start ? ' · benchmark history available from ' + B.bench_from : ''}`));
+  const kp = el('div', {class:'kpis'});
+  kp.append(
+    kpi(fPct(m.cagr_pct,false), 'CAGR', 'from commitment date', 'amber'),
+    kpi(fPct(m.total_return_pct,false), 'Total return', `${B.years} years`, 'teal'),
+    kpi(fPct(m.bench_cagr_pct,false), `${P.benchmark} CAGR`, B.bench_from && B.bench_from > B.start ? `from ${B.bench_from}` : 'same window', 'cyan'),
+    kpi(fPct(m.excess_cagr_pct), 'Excess CAGR', 'strategy − benchmark', signCol(m.excess_cagr_pct)),
+    kpi(fPct(m.max_dd_pct,false), 'Max drawdown', 'monthly NAV', 'rose'),
+    kpi(fN(m.sharpe), 'Sharpe', 'monthly returns, rf = 0', ''),
+    kpi(fR(m.net_profit), 'Net profit', 'after all charges', 'green'),
+    kpi(fR(m.final_value), 'Final value', `on ₹${inr.format(B.capital)}`, ''),
+    kpi(fPct(m.win_rate_pct,false), 'Win rate', `${m.wins} of ${m.total_trades} closed`, 'green'),
+    kpi(fN(m.profit_factor), 'Profit factor', 'gross profit ÷ gross loss', ''),
+    kpi(m.total_trades, 'Closed trades', `${m.open_trades} still open`, ''),
+    kpi(fPct(m.avg_win_pct), 'Avg win', 'per winning trade, net', 'green'),
+    kpi(fPct(m.avg_loss_pct), 'Avg loss', 'per losing trade, net', 'rose'),
+    kpi(m.avg_holding_months!=null? m.avg_holding_months.toFixed(1)+' mo' : '—', 'Avg holding', 'closed trades', ''),
+    kpi(fN(m.calmar), 'Calmar', 'CAGR ÷ max drawdown', ''),
+    kpi(m.max_stocks_held, 'Max stocks held', `avg ${fN(m.avg_stocks_held,1)}`, ''),
+    kpi(fR(m.charges_paid), 'Charges paid', 'STT, txn, stamp, SEBI, GST, DP', 'amber'),
+    kpi(fR(m.gross_profit), 'Gross profit', `gross loss ${fR(m.gross_loss)}`, ''),
+    kpi(fR(m.realised_pnl), 'Realised P&L', `unrealised ${fR(m.unrealised_pnl)}`, signCol(m.realised_pnl)),
+    kpi(m.best_year||'—', 'Best year', `worst ${m.worst_year||'—'}`, 'violet'),
+  );
+  s1.append(kp);
+  M.append(s1);
+
+  const s2 = el('section');
+  s2.append(secHead('2', 'Growth of capital', `₹${inr.format(B.capital)} committed ${B.start}, marked to market on monthly closes and net of every charge; benchmark scaled to the same starting capital`));
+  const H = B.history;
+  const b0 = H.find(h=>h.bench!=null)?.bench;
+  s2.append(lineChart({title:`${P.name} vs ${P.benchmark}`, dates:H.map(h=>h.date),
+    series:[{name:P.name, color:'var(--s1)', values:H.map(h=>h.nav)}, {name:P.benchmark, color:'var(--s2)', values:H.map(h=>(b0&&h.bench!=null)? h.bench/b0*B.capital : null)}],
+    fmt:v=>lakh(v), base:B.capital, area:true, extra:(i)=>`· ${H[i].n} stocks held`, minPts:2, height:380, wide:true}));
+  const two = el('div',{class:'two', style:'margin-top:12px'});
+  two.append(lineChart({title:'Drawdown from peak (%)', dates:H.map(h=>h.date), series:[{name:'Drawdown', color:'var(--rose)', values:H.map(h=>h.dd)}], fmt:v=>v.toFixed(1)+'%', area:true, base:0, minPts:2, height:220, padTop:false}),
+             lineChart({title:'Stocks held (of 25 slots)', dates:H.map(h=>h.date), series:[{name:'Held', color:'var(--cyan)', values:H.map(h=>h.n)}], fmt:v=>String(Math.round(v)), area:true, base:0, minPts:2, height:220, yMax:25, padBottom:false}));
+  s2.append(two);
+  M.append(s2);
+
+  const s3 = el('section');
+  s3.append(secHead('3', 'Year by year', 'calendar-year returns of the strategy book and the benchmark'));
+  s3.append(tableCard(B.yearly, [
+      {label:'Year', left:true, key:'year', desc:false}, {label:`${P.name}`, key:'port_pct'}, {label:P.benchmark, key:'bench_pct'}, {label:'Excess', key:'excess_pct'},
+      {label:'Book value at year end', key:'nav_end'}, {label:'Trades closed', key:'trades'}, {label:'Wins', key:'wins'}, {label:'Max held', key:'max_held'}],
+    r => { const tr=el('tr'); tr.append(td(r.year,'l'), pctCell(r.port_pct), pctCell(r.bench_pct), pctCell(r.excess_pct), td(fR(r.nav_end)), td(r.trades), td(r.wins), td(r.max_held)); return tr; },
+    'No yearly data.', 'year', false));
+  M.append(s3);
+
+  const s4 = el('section');
+  s4.append(secHead('4', 'What the backtest holds today', `${B.open_positions.length} of ${DATA.strategy.slots} slots · stops as the strategy would have them now · ${lakh(m.invested_now)} invested, ${lakh(m.cash_now)} in the Nifty ETF`));
+  s4.append(openBookTable(B.open_positions, false));
+  M.append(s4);
+
+  const s5 = el('section');
+  s5.append(secHead('5', 'Trade log', `${B.trades.length} positions since ${B.first_signal_month} · exits: ${Object.entries(m.exit_reasons||{}).map(([k,v])=>`${k} ${v}`).join(' · ')}`));
+  const tb = el('div',{class:'toolbar'}); const inp = el('input',{placeholder:'Filter symbol / name / reason…', type:'search'}); const holder = el('div'); let q='';
+  const drawT = () => { const rows = B.trades.filter(t=>!q || t.symbol.toLowerCase().includes(q) || (t.name||'').toLowerCase().includes(q) || (t.reason||'').toLowerCase().includes(q));
+    holder.replaceChildren(tableCard(rows, [
+      {label:'Stock', left:true, key:'symbol'}, {label:'Entry date', key:'entry_date'}, {label:'Entry ₹', key:'entry'}, {label:'Qty', key:'qty'}, {label:'Exit date', key:'exit_date'}, {label:'Exit ₹', key:'exit_price'},
+      {label:'Reason', key:'reason', left:true}, {label:'Scaled', key:'scaled'}, {label:'Months', key:'months'}, {label:'P&L %', key:'pnl_pct'}, {label:'Realised ₹ (net)', key:'realised'}, {label:'Rank', key:'rank'}, {label:'Score', key:'score'}],
+      r => { const tr=el('tr'); const rc = r.status==='open' ? 'held' : (r.reason||'').startsWith('SL') ? 'exit' : (r.reason||'').startsWith('Stop') ? 'exit' : 'scale';
+        tr.append(symCell(r), td(r.entry_date), td(fP(r.entry)), td(inr.format(r.qty)), td(r.exit_date||'—'), td(fP(r.exit_price)), el('td',{class:'l'}, el('span',{class:'tag '+rc}, r.reason)),
+          el('td',{}, r.scaled? el('span',{class:'tag scale'},'50% OUT'):'·'), td(r.months), pctCell(r.pnl_pct), td(r.status==='open' ? (r.realised? fR(r.realised)+' *':'—') : fR(r.realised), cls(r.realised)), td(r.rank??'—'), td(fP(r.score))); return tr; },
+      'No trades match.', 'exit_date', true)); };
+  inp.addEventListener('input', ()=>{ q=inp.value.trim().toLowerCase(); drawT(); }); tb.append(inp); s5.append(tb, holder); drawT();
+  s5.append(el('div',{class:'note'}, '* open positions show realised cash from a 50% scale-out only. P&L % for closed trades is net of all charges on the original position value; for open positions it is the unrealised move of the remaining quantity.'));
+  M.append(s5);
+}
+
+// =============================================================== generic line chart (SVG, hover crosshair)
+function lineChart({title, dates, series, fmt, base, area=false, extra, minPts=2, height=280, yMax, wide=false, padTop=true, padBottom=true}){
   const card = el('div', {class:'chart'});
-  const H = P.history.filter(h=>h.nav!=null);
-  card.append(el('div', {class:'t'}, el('b', {}, `Growth of 100 — ${P.name} vs ${P.benchmark}`),
-    el('div', {class:'legend'}, el('span',{}, el('i',{style:'background:var(--s1)'}), P.name), el('span',{}, el('i',{style:'background:var(--s2)'}), P.benchmark))));
-  if(H.length < 2){ card.append(el('div',{class:'empty'}, 'The equity curve appears once there are at least two days of history.')); return card; }
-  const W=760, Hh=280, pl=44, pr=14, pt=14, pb=28;
-  const nav0 = H[0].nav, b0 = H.find(h=>h.bench!=null)?.bench;
-  const pts = H.map((h,i)=>({i, date:h.date, p: h.nav/nav0*100, b: (b0 && h.bench!=null) ? h.bench/b0*100 : null}));
-  const vals = pts.flatMap(p=>[p.p, p.b]).filter(v=>v!=null);
-  let lo=Math.min(...vals), hi=Math.max(...vals); const pad=(hi-lo)*0.08||1; lo-=pad; hi+=pad;
-  const x = i => pl + (W-pl-pr) * (pts.length===1?0:i/(pts.length-1));
+  card.append(el('div', {class:'t'}, el('b', {}, title), el('div', {class:'legend'}, ...series.map(s=>el('span',{}, el('i',{style:`background:${s.color}`}), s.name)))));
+  const n = dates.length;
+  if(n < minPts){ card.append(el('div',{class:'empty'}, 'The curve appears once there are at least two data points.')); return card; }
+  const W=wide?1240:760, Hh=height, pl=wide?70:58, pr=14, pt=14, pb=28;
+  const vals = series.flatMap(s=>s.values).filter(v=>v!=null);
+  let lo=Math.min(...vals), hi=Math.max(...vals); if(yMax!=null) hi=Math.max(hi,yMax); if(base!=null){ lo=Math.min(lo,base); hi=Math.max(hi,base);} const pad=(hi-lo)*0.06||1; if(padBottom) lo-=pad; if(padTop) hi+=pad;
+  const x = i => pl + (W-pl-pr) * (n===1?0:i/(n-1));
   const y = v => pt + (Hh-pt-pb) * (1 - (v-lo)/(hi-lo));
-  const path = (key) => pts.filter(p=>p[key]!=null).map((p,k)=>`${k?'L':'M'}${x(p.i).toFixed(1)},${y(p[key]).toFixed(1)}`).join(' ');
-  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
-  svg.setAttribute('viewBox', `0 0 ${W} ${Hh}`);
-  const ns = (t, a) => { const n=document.createElementNS('http://www.w3.org/2000/svg', t); for(const [k,v] of Object.entries(a)) n.setAttribute(k,v); return n; };
-  // grid + y labels
+  const ns = (t, a) => { const e=document.createElementNS('http://www.w3.org/2000/svg', t); for(const [k,v] of Object.entries(a)) e.setAttribute(k,v); return e; };
+  const svg = ns('svg', {viewBox:`0 0 ${W} ${Hh}`});
   const ticks = 4;
   for(let k=0;k<=ticks;k++){ const v = lo + (hi-lo)*k/ticks; svg.append(ns('line',{x1:pl,x2:W-pr,y1:y(v),y2:y(v),stroke:'var(--border)','stroke-width':1}));
-    const t = ns('text',{x:pl-6,y:y(v)+4,'text-anchor':'end',fill:'var(--text-3)','font-size':11}); t.textContent=v.toFixed(1); svg.append(t); }
-  svg.append(ns('line',{x1:pl,x2:W-pr,y1:y(100),y2:y(100),stroke:'var(--border-2)','stroke-dasharray':'3 3'}));
-  // x labels
-  const nx = Math.min(6, pts.length); for(let k=0;k<nx;k++){ const i=Math.round((pts.length-1)*k/(nx-1||1)); const t=ns('text',{x:x(i),y:Hh-8,'text-anchor':k===0?'start':k===nx-1?'end':'middle',fill:'var(--text-3)','font-size':11}); t.textContent=pts[i].date.slice(5); svg.append(t); }
-  if(b0) svg.append(ns('path',{d:path('b'),fill:'none',stroke:'var(--s2)','stroke-width':2,'stroke-linejoin':'round'}));
-  svg.append(ns('path',{d:path('p'),fill:'none',stroke:'var(--s1)','stroke-width':2,'stroke-linejoin':'round'}));
+    const t = ns('text',{x:pl-8,y:y(v)+4,'text-anchor':'end',fill:'var(--text-3)','font-size':11}); t.textContent=fmt(v); svg.append(t); }
+  if(base!=null) svg.append(ns('line',{x1:pl,x2:W-pr,y1:y(base),y2:y(base),stroke:'var(--border-2)','stroke-dasharray':'3 3'}));
+  const nx = Math.min(7, n); for(let k=0;k<nx;k++){ const i=Math.round((n-1)*k/(nx-1||1)); const t=ns('text',{x:x(i),y:Hh-8,'text-anchor':k===0?'start':k===nx-1?'end':'middle',fill:'var(--text-3)','font-size':11}); t.textContent = n>40? dates[i].slice(0,7) : dates[i].slice(5); svg.append(t); }
+  const defs = ns('defs',{}); svg.append(defs);
+  series.slice().reverse().forEach((s, ri) => {
+    const pts = s.values.map((v,i)=>v==null?null:[x(i),y(v)]).filter(Boolean);
+    if(pts.length<2) return;
+    const d = pts.map((p,k)=>`${k?'L':'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+    if(area && ri===series.length-1){ const gid='g'+Math.random().toString(36).slice(2); const g=ns('linearGradient',{id:gid,x1:0,y1:0,x2:0,y2:1}); g.append(ns('stop',{offset:'0%','stop-color':s.color,'stop-opacity':.35}), ns('stop',{offset:'100%','stop-color':s.color,'stop-opacity':0})); defs.append(g);
+      const yb = y(base!=null ? base : lo); svg.append(ns('path',{d:`${d} L${pts[pts.length-1][0].toFixed(1)},${yb.toFixed(1)} L${pts[0][0].toFixed(1)},${yb.toFixed(1)} Z`, fill:`url(#${gid})`})); }
+    svg.append(ns('path',{d, fill:'none', stroke:s.color, 'stroke-width':2, 'stroke-linejoin':'round'}));
+  });
   const cross = ns('line',{x1:0,x2:0,y1:pt,y2:Hh-pb,stroke:'var(--text-3)','stroke-width':1,opacity:0});
-  const dotP = ns('circle',{r:4,fill:'var(--s1)',stroke:'var(--surface)','stroke-width':2,opacity:0});
-  const dotB = ns('circle',{r:4,fill:'var(--s2)',stroke:'var(--surface)','stroke-width':2,opacity:0});
-  svg.append(cross, dotP, dotB);
+  const dots = series.map(s=>ns('circle',{r:4,fill:s.color,stroke:'var(--surface)','stroke-width':2,opacity:0}));
+  svg.append(cross, ...dots);
   const tt = $('#tt');
-  svg.addEventListener('mousemove', ev => { const r = svg.getBoundingClientRect(); const fx = (ev.clientX - r.left) / r.width * W; const i = Math.max(0, Math.min(pts.length-1, Math.round((fx-pl)/(W-pl-pr)*(pts.length-1)))); const p=pts[i];
+  svg.addEventListener('mousemove', ev => { const r = svg.getBoundingClientRect(); const fx = (ev.clientX - r.left) / r.width * W; const i = Math.max(0, Math.min(n-1, Math.round((fx-pl)/(W-pl-pr)*(n-1))));
     cross.setAttribute('x1',x(i)); cross.setAttribute('x2',x(i)); cross.setAttribute('opacity',1);
-    dotP.setAttribute('cx',x(i)); dotP.setAttribute('cy',y(p.p)); dotP.setAttribute('opacity',1);
-    if(p.b!=null){ dotB.setAttribute('cx',x(i)); dotB.setAttribute('cy',y(p.b)); dotB.setAttribute('opacity',1);} else dotB.setAttribute('opacity',0);
-    tt.innerHTML = `<b>${p.date}</b><br>${P.name}: ${p.p.toFixed(2)} <span class="mut">(${fR(H[i].nav)})</span>` + (p.b!=null? `<br>${P.benchmark}: ${p.b.toFixed(2)}`:'');
-    tt.style.display='block'; tt.style.left = (ev.pageX + 14) + 'px'; tt.style.top = (ev.pageY - 10) + 'px'; });
-  svg.addEventListener('mouseleave', ()=>{ tt.style.display='none'; cross.setAttribute('opacity',0); dotP.setAttribute('opacity',0); dotB.setAttribute('opacity',0); });
+    let html = `<b>${dates[i]}</b>`;
+    series.forEach((s,k)=>{ const v=s.values[i]; if(v==null){ dots[k].setAttribute('opacity',0); return; } dots[k].setAttribute('cx',x(i)); dots[k].setAttribute('cy',y(v)); dots[k].setAttribute('opacity',1); html += `<br><span style="color:${s.color}">●</span> ${s.name}: ${fmt(v)}`; });
+    if(extra) html += ` <span class="mut">${extra(i)}</span>`;
+    tt.innerHTML = html; tt.style.display='block'; tt.style.left = (ev.pageX + 14) + 'px'; tt.style.top = (ev.pageY - 10) + 'px'; });
+  svg.addEventListener('mouseleave', ()=>{ tt.style.display='none'; cross.setAttribute('opacity',0); dots.forEach(d=>d.setAttribute('opacity',0)); });
   card.append(svg);
   return card;
 }
