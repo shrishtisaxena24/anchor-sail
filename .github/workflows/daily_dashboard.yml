@@ -1,11 +1,12 @@
 name: Anchor & Sail daily dashboard
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:          # "Run workflow" button
   schedule:
-    - cron: "45 4-9 * * 1-5"
-    - cron: "15 10 * * 1-5"
-    - cron: "30 12 * * *"
+    # Times are UTC. IST = UTC + 5:30. GitHub's scheduler may run 5–20 minutes late.
+    - cron: "0,15,30,45 4-9 * * 1-5"   # every 15 min, 09:30–15:15 IST, Mon–Fri — live stop monitoring
+    - cron: "0,15 10 * * 1-5"          # 15:30 and 15:45 IST Mon–Fri — closing bar
+    - cron: "30 12 * * *"              # 18:00 IST every day — final end-of-day build
 
 concurrency:
   group: anchor-sail-build
@@ -13,6 +14,8 @@ concurrency:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   build:
@@ -44,17 +47,31 @@ jobs:
       - name: Build dashboard data
         run: python engine/build.py 2>&1 | tee run.log
 
-      - name: Commit updated data
+      # The dashboard (docs/) is published straight to GitHub Pages from this run — data.json is
+      # NOT committed any more, so 25 builds a day do not bloat the repository.
+      - name: Upload dashboard for Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      # Ledgers and universe snapshots are committed only when something material changed
+      # (an entry, exit, scale-out, trail or split) or on the end-of-day pass.
+      - name: Commit ledger state
         run: |
           git config user.name  "anchor-sail-bot"
           git config user.email "anchor-sail-bot@users.noreply.github.com"
-          git add docs/data.json data/state data/universe
-          if git diff --cached --quiet; then
-            echo "nothing changed"
+          git rm -q --cached docs/data.json 2>/dev/null || true
+          if [ -f data/.commit ]; then
+            git add data/state data/universe
+            if git diff --cached --quiet; then
+              echo "nothing to commit"
+            else
+              git commit -m "ledger: $(date -u +'%Y-%m-%d %H:%M UTC')"
+              git pull --rebase --autostash origin ${{ github.ref_name }} || true
+              git push
+            fi
           else
-            git commit -m "data: $(date -u +'%Y-%m-%d %H:%M UTC')"
-            git pull --rebase --autostash origin ${{ github.ref_name }} || true
-            git push
+            echo "intraday run — ledger unchanged, nothing committed"
           fi
 
       - name: Summary
@@ -64,3 +81,14 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           tail -n 40 run.log >> $GITHUB_STEP_SUMMARY || true
           echo '```' >> $GITHUB_STEP_SUMMARY
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
