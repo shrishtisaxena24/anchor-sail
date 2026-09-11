@@ -88,8 +88,11 @@ so. Drop the official CSV from niftyindices.com into `data/benchmarks/` for the 
 * Benchmarks: `^CNX100`, `NIFTYMIDCAP150.NS`, `NIFTYSMLCAP250.NS`, `^CRSLDX`; labelled ETF
   proxies only as a visible fallback; an official CSV in `data/benchmarks/` overrides both.
 * Survivorship bias: the universe is today's members applied to the warm-up history.
-* Yahoo's NSE feed is delayed about 15 minutes; intraday runs are for stop monitoring, the
-  18:00 IST run is the day's final word.
+* Yahoo's NSE feed is delayed about 15 minutes; the 15-minute intraday builds are for stop
+  monitoring, the 18:00 IST run is the day's final word. The dashboard is published to GitHub
+  Pages straight from each build (data.json is not committed); ledgers are committed only when
+  an entry, exit, scale-out, trail or split happened, or on the end-of-day pass.
+* Theme: the Light/Dark switch in the header is purely visual (remembered per browser).
 
 ## Files
 

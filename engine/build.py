@@ -430,6 +430,7 @@ def main(mock: bool = False, offline: bool = False):
     final_cutoff = today if after_close else today - pd.Timedelta(days=1)   # last day whose bar is final
 
     out_portfolios = {}
+    material_change = False
     for pname, cfg in PORTFOLIOS.items():
         uni = unis[pname]
         uni_set = set(uni)
@@ -439,6 +440,7 @@ def main(mock: bool = False, offline: bool = False):
                      "cash_units": S.CAPITAL / float(nsei.loc[inception_day, "Close"]),
                      "ranking": cfg["ranking"], "created": now_ist.isoformat(), "version": LEDGER_VERSION}
         book = S.Book(state)
+        events_before = len(state.get("events", []))
         bench, bench_label, bw = (None, "", []) if mock else load_benchmark(pname, start=HISTORY_START, log=log)
         if mock:
             bench = nsei["Close"] * 1.0; bench_label = "MOCK benchmark"
@@ -500,6 +502,8 @@ def main(mock: bool = False, offline: bool = False):
             state["history"][dk] = {"nav": round(nav, 2), "bench": bval, "cash": round(cash, 2), "inv": round(inv, 2)}
         state["last_processed_date"] = str(min(data_date, final_cutoff).date()) if data_date >= inception_day else None
         state["last_run"] = now_ist.isoformat()
+        if len(state["events"]) != events_before or state.get("created", "").startswith(now_ist.strftime("%Y-%m-%dT")):
+            material_change = True
         save_state(pname, state)
 
         # ---- build dashboard payload for this portfolio
@@ -657,6 +661,12 @@ def main(mock: bool = False, offline: bool = False):
     }
     DOCS.mkdir(parents=True, exist_ok=True)
     (DOCS / "data.json").write_text(json.dumps(payload, default=str, separators=(",", ":")))
+    # tell the workflow whether the ledgers are worth committing on this run
+    flag = ROOT / "data" / ".commit"
+    if material_change or after_close or not (STATE_DIR / "CORE.json").exists():
+        flag.write_text(now_ist.isoformat())
+    elif flag.exists():
+        flag.unlink()
     log(f"wrote docs/data.json ({(DOCS / 'data.json').stat().st_size // 1024} KB) in {time.time() - t0:.0f}s; "
         f"{len(warnings)} warning(s)")
     for w in warnings:

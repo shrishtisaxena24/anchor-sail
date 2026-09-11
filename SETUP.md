@@ -52,10 +52,12 @@ Finder hides folders that start with a dot, so this one is created by paste:
 ## Step 6 — Turn on the web page
 
 1. **Settings** → left menu **Pages**.
-2. Under **Build and deployment** → **Source**: *Deploy from a branch*.
-3. **Branch**: `main`, folder: **/docs** → **Save**.
-4. After a minute the page shows your URL:
-   `https://<your-username>.github.io/anchor-sail/` — bookmark it (also works on your phone).
+2. Under **Build and deployment** → **Source**: choose **GitHub Actions** (the workflow publishes
+   the dashboard directly after every build; nothing else to configure).
+3. Your URL is `https://<account>.github.io/anchor-sail/` — bookmark it (also works on your phone).
+   To have the company name in the address, create a free GitHub **Organization** (e.g.
+   `finsights-momentum`) and transfer the repository into it: repository **Settings → General →
+   Danger Zone → Transfer ownership**. Then repeat Steps 5–6 inside the new location.
 
 ## Step 7 — First run
 
@@ -66,8 +68,8 @@ Finder hides folders that start with a dot, so this one is created by paste:
 3. Open your Pages URL. If it still says "No data yet", wait one more minute (Pages
    republishes after each data update) and reload.
 
-From now on it runs automatically: hourly 10:15–15:15 IST on trading days, at 15:45 IST,
-and a final pass at 18:00 IST every day. Opening the URL always shows the latest build;
+From now on it runs automatically: every 15 minutes 09:30–15:45 IST on trading days and a
+final pass at 18:00 IST every day (GitHub's scheduler can be 5–20 minutes late). Opening the URL always shows the latest build;
 the page also refreshes itself every 5 minutes while open.
 
 ---

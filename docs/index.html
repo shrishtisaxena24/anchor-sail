@@ -15,6 +15,16 @@
   --s1:var(--teal); --s2:var(--pink);
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
+:root[data-theme="light"]{
+  color-scheme: light;
+  --bg:#f3f5fa; --bg2:#eef1f8; --surface:#ffffff; --surface-2:#f1f4fa; --surface-3:#e7ecf5; --border:#dde3ee; --border-2:#c5cfe0;
+  --text:#0f172a; --text-2:#4b5872; --text-3:#7d8aa3;
+  --teal:#0f9f8f; --cyan:#0284c7; --pink:#db2777; --rose:#e11d48; --green:#0f9d58; --amber:#c98500; --violet:#6d4fd8; --blue:#2563eb;
+  --good:#0f9d58; --bad:#e11d48; --warn:#c98500;
+  --good-bg:rgba(15,157,88,.12); --bad-bg:rgba(225,29,72,.10); --warn-bg:rgba(201,133,0,.12); --teal-bg:rgba(15,159,143,.12); --pink-bg:rgba(219,39,119,.10); --violet-bg:rgba(109,79,216,.12); --grey-bg:rgba(75,88,114,.10);
+  --strong:#0b1120;
+}
+:root{--strong:#ffffff}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif}
 body{background:
@@ -22,6 +32,18 @@ body{background:
   radial-gradient(800px 500px at 110% 0%, rgba(167,139,250,.14), transparent 60%),
   radial-gradient(700px 500px at 50% 120%, rgba(244,114,182,.08), transparent 60%),
   var(--bg); min-height:100vh}
+:root[data-theme="light"] body{background:
+  radial-gradient(900px 500px at -10% -10%, rgba(2,132,199,.08), transparent 60%),
+  radial-gradient(800px 500px at 110% 0%, rgba(109,79,216,.07), transparent 60%),
+  var(--bg)}
+:root[data-theme="light"] .tab.active{box-shadow:0 0 0 1px var(--teal), 0 10px 30px rgba(15,159,143,.15)}
+:root[data-theme="light"] .tt{box-shadow:0 8px 30px rgba(15,23,42,.15)}
+.theme{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border-2);background:var(--surface);border-radius:999px;padding:4px 6px 4px 10px;font-size:12px;color:var(--text-2);cursor:pointer;user-select:none}
+.theme .knob{width:34px;height:20px;border-radius:999px;background:var(--surface-3);position:relative;border:1px solid var(--border-2)}
+.theme .knob::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--cyan));transition:left .15s}
+:root[data-theme="light"] .theme .knob::after{left:16px;background:linear-gradient(135deg,var(--amber),#f59e0b)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--surface-3);color:var(--text);border:1px solid var(--border-2);border-radius:10px;padding:10px 16px;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.35);z-index:9;display:none;max-width:90vw;text-align:center}
+.toast b{color:var(--strong)}
 a{color:var(--cyan)}
 .wrap{max-width:1540px;margin:0 auto;padding:14px 22px 70px}
 header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;padding:10px 0 14px;border-bottom:1px solid var(--border)}
@@ -36,7 +58,7 @@ h1 small{display:block;letter-spacing:0;text-transform:none;font-weight:500;colo
 .pill.closed{background:var(--grey-bg);color:var(--text-2)}
 .pill.stale{background:var(--warn-bg);color:var(--amber)}
 button{font:inherit;cursor:pointer;border:1px solid var(--border-2);background:var(--surface);color:var(--text);border-radius:9px;padding:7px 13px}
-button:hover{border-color:var(--teal);color:#fff}
+button:hover{border-color:var(--teal);color:var(--strong)}
 .banner{margin:14px 0 0;padding:10px 14px;border-radius:12px;background:var(--warn-bg);border:1px solid rgba(251,191,36,.35);font-size:13px}
 .banner summary{cursor:pointer;font-weight:600;color:var(--amber)}
 .banner ul{margin:8px 0 0;padding-left:18px;color:var(--text-2)}
@@ -72,7 +94,7 @@ th:hover{color:var(--teal)}
 th .arrow{opacity:.7;font-size:9px;margin-left:3px;color:var(--teal)}
 tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:rgba(56,189,248,.06)}
-td.sym{font-weight:700;text-align:left;color:#fff}
+td.sym{font-weight:700;text-align:left;color:var(--strong)}
 td.sym small{display:block;font-weight:400;color:var(--text-3);font-size:11px;max-width:230px;overflow:hidden;text-overflow:ellipsis}
 .empty{padding:18px;color:var(--text-3);font-size:13px;text-align:center}
 .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:800;letter-spacing:.04em}
@@ -88,7 +110,7 @@ td.sym small{display:block;font-weight:400;color:var(--text-3);font-size:11px;ma
 .ok{color:var(--green);font-weight:700} .no{color:var(--text-3)}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px}
 .kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
-.kpi .v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em;color:#fff}
+.kpi .v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em;color:var(--strong)}
 .kpi .k{font-size:10.5px;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;margin-top:6px;font-weight:700}
 .kpi .d{font-size:11.5px;color:var(--text-2);margin-top:3px}
 .kpi .v.teal{color:var(--teal)} .kpi .v.cyan{color:var(--cyan)} .kpi .v.pink{color:var(--pink)} .kpi .v.green{color:var(--green)} .kpi .v.amber{color:var(--amber)} .kpi .v.rose{color:var(--rose)} .kpi .v.violet{color:var(--violet)}
@@ -106,7 +128,7 @@ svg{display:block;width:100%;height:auto}
 .stats div{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
 .stats div:last-child{border-bottom:none}
 .stats span:first-child{color:var(--text-2)}
-.stats span:last-child{font-variant-numeric:tabular-nums;font-weight:700;color:#fff}
+.stats span:last-child{font-variant-numeric:tabular-nums;font-weight:700;color:var(--strong)}
 .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 10px}
 .toolbar input{font:inherit;padding:7px 12px;border:1px solid var(--border-2);border-radius:9px;background:var(--surface);color:var(--text);min-width:240px}
 .toolbar input:focus{outline:none;border-color:var(--teal)}
@@ -119,7 +141,7 @@ footer{margin-top:34px;color:var(--text-3);font-size:12px;border-top:1px solid v
 .stopbar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
 #loading{padding:60px;text-align:center;color:var(--text-2);line-height:1.7}
 .hero{background:linear-gradient(135deg,rgba(45,212,191,.12),rgba(56,189,248,.08) 50%,rgba(244,114,182,.10));border:1px solid var(--border-2);border-radius:14px;padding:14px 18px;margin-bottom:12px;font-size:13.5px;color:var(--text-2)}
-.hero b{color:#fff}
+.hero b{color:var(--strong)}
 </style>
 </head>
 <body>
@@ -130,9 +152,10 @@ footer{margin-top:34px;color:var(--text-3);font-size:12px;border-top:1px solid v
       <h1>Anchor &amp; Sail <small>live signal dashboard · four portfolios · live book and 2016→today backtest</small></h1>
     </div>
     <div class="meta" id="meta"></div>
-    <div style="display:flex;gap:10px;align-items:center">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <span class="mut" id="autoref" style="font-size:12px"></span>
-      <button id="refresh">↻ Refresh now</button>
+      <button id="refresh" title="Re-reads the latest build published by GitHub. Prices update when GitHub rebuilds (every 15 min in market hours).">↻ Refresh now</button>
+      <span class="theme" id="theme" title="Switch light / dark theme"><span id="themeLabel">Dark</span><span class="knob"></span></span>
     </div>
   </header>
   <div id="warnings"></div>
@@ -143,6 +166,7 @@ footer{margin-top:34px;color:var(--text-3);font-size:12px;border-top:1px solid v
   <footer id="foot"></footer>
 </div>
 <div class="tt" id="tt"></div>
+<div class="toast" id="toast"></div>
 
 <script>
 (function(){
@@ -502,7 +526,37 @@ function lineChart({title, dates, series, fmt, base, area=false, extra, minPts=2
   return card;
 }
 
-$('#refresh').addEventListener('click', load);
+// ---------------------------------------------------------------- theme toggle (visual only — no data changes)
+function applyTheme(t){ document.documentElement.setAttribute('data-theme', t); $('#themeLabel').textContent = t==='light' ? 'Light' : 'Dark'; try{ localStorage.setItem('as_theme', t); }catch(e){} }
+applyTheme((()=>{ try{ return localStorage.getItem('as_theme') || 'dark'; }catch(e){ return 'dark'; } })());
+$('#theme').addEventListener('click', ()=> applyTheme(document.documentElement.getAttribute('data-theme')==='light' ? 'dark' : 'light'));
+
+// ---------------------------------------------------------------- refresh: re-read the latest GitHub build and say what happened
+// Build schedule (IST): every 15 min 09:30–15:30 Mon–Fri, 15:45 Mon–Fri, 18:00 every day. GitHub's scheduler can run 5–20 min late.
+function nowIST(){ return new Date(Date.now() + 5.5*3600e3); }              // UTC-shifted clock; read fields with getUTC*
+function nextBuildIST(){
+  const n = nowIST(); const dow = n.getUTCDay(); const mins = n.getUTCHours()*60 + n.getUTCMinutes();
+  const slots = [];
+  if(dow>=1 && dow<=5){ for(let m=9*60+30; m<=15*60+30; m+=15) slots.push(m); slots.push(15*60+45); }
+  slots.push(18*60);
+  const nxt = slots.find(m=>m>mins);
+  const d = new Date(n); if(nxt==null){ d.setUTCDate(d.getUTCDate()+1); const dd=d.getUTCDay(); d.setUTCHours(dd>=1&&dd<=5?9:18, dd>=1&&dd<=5?30:0, 0, 0); } else d.setUTCHours(Math.floor(nxt/60), nxt%60, 0, 0);
+  const pad = x=>String(x).padStart(2,'0'); const sameDay = d.getUTCDate()===n.getUTCDate();
+  return `${sameDay?'today':'tomorrow'} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} IST`;
+}
+let toastT; function toast(html){ const t=$('#toast'); t.innerHTML=html; t.style.display='block'; clearTimeout(toastT); toastT=setTimeout(()=>{ t.style.display='none'; }, 6000); }
+async function refreshNow(){
+  const before = DATA && DATA.generated_at_utc;
+  const btn = $('#refresh'); btn.disabled = true; btn.textContent = '↻ Checking…';
+  await load();
+  btn.disabled = false; btn.textContent = '↻ Refresh now';
+  if(!DATA) return;
+  const built = DATA.generated_at_ist.slice(11,16);
+  if(DATA.generated_at_utc !== before) toast(`<b>Updated.</b> Showing the build from <b>${built} IST</b> (${DATA.market_status}). Next scheduled build ≈ ${nextBuildIST()}.`);
+  else toast(`No newer build yet — latest is <b>${built} IST</b> (${DATA.market_status}). GitHub rebuilds every 15 min in market hours; next ≈ ${nextBuildIST()}. Prices come from Yahoo with a ~15 min delay.`);
+  secs = 300;
+}
+$('#refresh').addEventListener('click', refreshNow);
 let secs = 300; setInterval(()=>{ secs--; if(secs<=0){ secs=300; load(); } $('#autoref').textContent = `auto-refresh in ${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}`; }, 1000);
 load();
 })();
